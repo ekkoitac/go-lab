@@ -1,0 +1,33 @@
+.arch106 { min-width:0; color:#263c4c; overflow-wrap:anywhere; }
+.arch106 * { box-sizing:border-box; }
+.arch106 p { line-height:1.65; }
+.arch106 .a106-controls { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.arch106 label { display:flex; flex-direction:column; gap:6px; min-width:0; max-width:100%; margin:8px 0; font-size:13px; }
+.arch106 select,.arch106 textarea { width:100%; min-width:0; max-width:100%; padding:8px; border:1px solid #b8cdd4; border-radius:8px; color:#263c4c; background:#fff; font:inherit; }
+.arch106 button { border:1px solid #b8cdd4; border-radius:8px; padding:8px 12px; background:#f1f8f7; color:#245752; font:inherit; white-space:normal; cursor:pointer; }
+.arch106 button:disabled { opacity:.5; cursor:default; }
+.arch106 button[aria-pressed=true] { background:#d9eee9; border-color:#278c7c; }
+.arch106 :focus-visible { outline:3px solid #248e95; outline-offset:3px; }
+.arch106 fieldset { min-width:0; border:1px solid #d4e0e5; border-radius:10px; padding:10px; }
+.arch106 legend { font-size:13px; padding:0 5px; }
+.arch106 .a106-check { flex-direction:row; align-items:flex-start; line-height:1.5; }
+.arch106 .a106-check input { margin:3px 0; flex:none; }
+.arch106 .a106-panel { border:1px solid #d7e3e8; background:#f5f8fa; border-radius:12px; padding:12px; margin:12px 0; }
+.arch106 .a106-topology { margin-top:12px; }
+.arch106 .a106-boundary { padding:10px; border:1px dashed #91adb8; border-radius:9px; background:#fff; font-size:13px; }
+.arch106 .a106-commands { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin-top:8px; }
+.arch106 .a106-commands>div { display:flex; flex-direction:column; gap:5px; padding:8px 5px; border:1px solid #d2e1e6; border-radius:7px; background:#f5f9fb; }
+.arch106 .a106-commands>div.selected { background:#dcefe9; border:2px solid #278c7c; }
+.arch106 code { font-size:12px; white-space:pre-wrap; overflow-wrap:anywhere; }
+.arch106 .a106-node { text-align:center; padding:8px; background:#eaf3f2; border-radius:7px; }
+.arch106 .a106-arrow { text-align:center; padding:8px; font-size:12px; }
+.arch106 .a106-metrics { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+.arch106 .a106-metrics span { padding:6px 10px; border-radius:7px; background:#e1ecef; font-size:13px; }
+.arch106 table { width:100%; table-layout:fixed; border-collapse:collapse; font-size:13px; }
+.arch106 th,.arch106 td { text-align:left; padding:8px 5px; border-bottom:1px solid #d7e2e5; overflow-wrap:anywhere; }
+.arch106 .a106-feedback { padding:12px; border-left:3px solid #338d7c; background:#edf7f2; line-height:1.7; margin:10px 0; }
+.arch106 .a106-route { display:flex; flex-direction:column; gap:9px; align-items:stretch; text-align:center; background:#f1f7f8; padding:12px; border:1px solid #cbdfe2; border-radius:10px; margin:12px 0; }
+.arch106 .a106-route strong { padding:8px; background:white; border-radius:7px; }
+.arch106 .a106-muted { color:#627985; font-size:12px; }
+@media(max-width:480px) { .arch106 .a106-commands { grid-template-columns:1fr; } .arch106 .a106-panel { padding:10px; } .arch106 .a106-controls>label { flex:1 1 100%; } }
+@media(prefers-reduced-motion:reduce) { .arch106 * { animation:none!important; transition:none!important; } }

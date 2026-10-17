@@ -1,0 +1,43 @@
+.arch118 { min-width: 0; color: #283b4a; line-height: 1.65; }
+.arch118 h3,.arch118 h4 { margin: 0 0 10px; color: #143a4b; }
+.arch118 p { margin: 9px 0; overflow-wrap: anywhere; }
+.arch118-kicker { font-size: 11px; letter-spacing: .12em; color: #176d72; }
+.arch118 label { display: grid; gap: 5px; font-size: 13px; min-width: 0; margin: 8px 0; }
+.arch118 select,.arch118 input:not([type=checkbox]),.arch118 textarea { min-width: 0; width: 100%; box-sizing: border-box; padding: 8px; background: #ffffff; border: 1px solid #c7d8db; border-radius: 7px; color: #223f4b; font: inherit; }
+.arch118 textarea { min-height: 88px; resize: vertical; }
+.arch118 .arch118-check { display: flex; align-items: center; gap: 8px; }
+.arch118 fieldset { margin: 12px 0; padding: 12px; border: 1px solid #c7d8db; min-width: 0; border-radius: 8px; }
+.arch118 legend { padding: 0 5px; font-size: 13px; }
+.arch118-controls { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,210px),1fr)); gap: 10px; }
+.arch118-board { padding: 12px; border: 1px solid #c7d8db; border-radius: 10px; background: #f7fbfc; }
+.arch118-lanes { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,160px),1fr)); gap: 8px; margin: 12px 0; }
+.arch118 button { min-height: 38px; border: 1px solid #b7cfd6; background: #ffffff; color: #27586a; padding: 8px 12px; border-radius: 7px; font: inherit; cursor: pointer; white-space: normal; overflow-wrap: anywhere; }
+.arch118 button:disabled { opacity: 1; color: #596f7d; background: #edf2f5; border-color: #cbd7dd; cursor: default; }
+.arch118-lanes button { display: grid; gap: 4px; text-align: left; padding: 10px; min-width: 0; }
+.arch118-lanes button:disabled { opacity: 1; }
+.arch118-lanes span,.arch118-lanes small { font-size: 12px; }
+.arch118 .selected { background: #daf4e9; border-color: #27868c; }
+.arch118 :focus-visible { outline: 2px solid #b4771a; outline-offset: 3px; }
+.arch118-state-machine { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; padding: 0; list-style: none; }
+.arch118-state-machine li { padding: 8px 4px; background: #edf3f6; border: 1px solid #c7d8db; border-radius: 6px; font-size: 12px; text-align: center; overflow-wrap: anywhere; }
+.arch118-state-machine li.active { border: 2px solid #218667; background: #daf4e9; font-weight: bold; }
+.arch118-path { color: #4e6777; font-size: 12px; }
+.arch118 progress { width: 100%; height: 12px; accent-color: #148185; }
+.arch118-facts { display: grid; gap: 6px; font-size: 12px; }
+.arch118-feedback,.arch118-selection { margin-top: 12px; padding: 12px; background: #edf7f6; border-left: 3px solid #328b82; border-radius: 5px; }
+.arch118-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.arch118-note { color: #596f7d; font-size: 12px; }
+.arch118-help .arch118-lanes { grid-template-columns: 1fr; }
+.arch118-help .arch118-board { padding: 8px; }
+@media (max-width: 500px) { .arch118-controls,.arch118-lanes { grid-template-columns: 1fr; } .arch118-board { padding: 8px; } .arch118-actions button { flex: 1 1 auto; } }
+@media (prefers-reduced-motion: reduce) { .arch118 * { animation: none !important; transition: none !important; } }
+
+.arch118 legend{color:#29475a}.arch118 pre{color:#264c61}.arch118 input:disabled,.arch118 select:disabled,.arch118 textarea:disabled{opacity:1;color:#596f7d;-webkit-text-fill-color:#596f7d;background:#f3f6f8}.arch118 input::placeholder,.arch118 textarea::placeholder{color:#657681;opacity:1}
+
+
+
+/* Keep local teaching copy readable over the shared help-content paragraph palette. */
+.help-content .arch118 p,.help-content .arch118 li{color:#283b4a;opacity:1}
+.help-content .arch118 small{color:#526875;opacity:1}
+.help-content .arch118 .arch118-note{color:#526875;opacity:1}
+.help-content .arch118 .arch118-kicker{color:#176d72;opacity:1}

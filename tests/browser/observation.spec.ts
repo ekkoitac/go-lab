@@ -21,8 +21,8 @@ async function checkGeometry(page:Page){
  }));
 }
 for(let chapter=0;chapter<10;chapter++){
-// Chapters 5–7 use dedicated models, covered by sync, channel and io browser suites.
-if(chapter===4||chapter===5||chapter===6)continue;
+// Chapters 5–10 use dedicated models, covered by their own browser suites.
+if(chapter===4||chapter===5||chapter===6||chapter===7||chapter===8||chapter===9)continue;
 const chapterLessons=lessons.slice(chapter*10,chapter*10+10);
 test(`chapter ${chapter+1}: every frame is readable and controls are reversible`,async({page})=>{
  test.setTimeout(180000);
@@ -113,20 +113,11 @@ test('closing an empty channel wakes the receiver with a visible zero/false resu
  await lab.getByRole('button',{name:'重置',exact:true}).click();
  await expect(lab.locator('.receive-result')).toContainText('尚无结果');
 });
-test('failed transaction has truthful feedback',async({page})=>{
- const lab=(await open(page,77)).locator('.special-lab');
- await lab.getByLabel('开始事务并扣款').click();
- await lab.getByLabel('模拟收款失败',{exact:true}).click();
- await expect(lab.getByLabel('已提交余额 10').locator('.cell')).toHaveCount(10);
- await expect(lab).toContainText('收款失败 → Rollback');
- await lab.getByLabel('事务扣款金额').fill('15');
- await expect(lab).toContainText('余额不足');
-});
-test('review screenshots: memory relations, full values, pagination and mobile',async({page})=>{
- for(const id of [5,13,82]){
+// Transaction rollback and uncertain commit feedback: data-boundary-77.spec.ts.
+test('review screenshots: memory relations, full values and mobile',async({page})=>{
+ for(const id of [5,13]){
   const panel=await open(page,id);
   await panel.getByLabel('下一步实验',{exact:true}).click();
-  if(id===82){await panel.getByLabel('加入第一页用例').check();await panel.getByLabel('加入非法输入用例').check();}
   await panel.screenshot({path:`.runtime/observation-${id}.png`});
  }
  await page.setViewportSize({width:390,height:844});

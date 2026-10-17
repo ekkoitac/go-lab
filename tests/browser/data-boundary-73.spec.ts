@@ -1,0 +1,22 @@
+import {test,expect} from '@playwright/test';
+for(const width of [1440,390])test(`73 numeric boundary experiment and three help tasks at ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:1000});await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/#lesson/73');await page.getByRole('button',{name:'动手观察',exact:true}).click();
+ const lab=page.locator('.learning-column').getByTestId('data-boundary-lab-73'),model=lab.getByTestId('live-model');
+ await expect(lab).toBeVisible();const step=lab.locator('[data-db73-action=step]');
+ await expect(step).toBeDisabled();await lab.getByLabel('预测结果').selectOption('changed');await lab.getByLabel('判断依据',{exact:true}).fill('浮点数无法表示所有相邻整数');
+ await lab.getByRole('button',{name:'提交预测',exact:true}).focus();await page.keyboard.press('Enter');
+ for(let i=0;i<3;i++)await step.click();
+ const state=JSON.parse((await model.getAttribute('data-state'))!);expect(state.decoded).toBe('9007199254740992');expect(state.outcome).toBe('changed');await expect(model.locator('.db73-changed').first()).toHaveText('2');
+ await lab.locator('[data-db73-action=back]').click();await step.click();expect(JSON.parse((await model.getAttribute('data-state'))!)).toEqual(state);
+ await lab.getByRole('button',{name:'保存为基线',exact:true}).click();await lab.getByLabel('根据证据修正解释').fill('在解码时就舍入了，应先保留原文并检查整数范围');await lab.getByRole('button',{name:'记录修正',exact:true}).click();await expect(lab.getByRole('status')).toBeVisible();
+ await lab.getByRole('combobox',{name:'接收策略',exact:true}).selectOption('number');await expect(step).toBeDisabled();await expect(lab.getByLabel('预测结果')).toHaveValue('');
+ await lab.getByRole('button',{name:'自由实验',exact:true}).click();for(let i=0;i<3;i++)await step.click();expect(JSON.parse((await model.getAttribute('data-state'))!).converted).toBe('9007199254740993');await expect(lab.locator('.db73-baseline')).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ const panel=page.locator('.help-panel');await panel.getByRole('button',{name:'数字在哪变了',exact:true}).click();
+ const help=page.getByTestId('data-boundary-help-73');await expect(help).toBeVisible();await help.getByRole('button',{name:'整数 +1',exact:true}).click();await expect(help.getByTestId('live-model')).toHaveAttribute('data-state',/9007199254740994/);
+ await panel.getByRole('button',{name:'比较保存策略',exact:true}).click();await help.getByRole('button',{name:'执行两条管线',exact:true}).click();await expect(help.getByTestId('live-model').locator('article')).toHaveCount(2);await expect(help.getByTestId('live-model')).toContainText('超出 int64 范围');
+ await panel.getByRole('button',{name:'寻找精度反例',exact:true}).click();await expect(help.getByTestId('live-model')).toHaveCount(0);await help.getByLabel('预测结果').selectOption('changed');await help.getByLabel('反例依据').fill('该整数不是浮点数可以逐一表示的值');await help.getByRole('button',{name:'提交反例并核对',exact:true}).click();await expect(help.getByTestId('live-model')).toContainText('首次尝试');
+ await help.getByRole('button',{name:'换一道练习',exact:true}).click();await expect(help.getByTestId('live-model')).toHaveCount(0);await help.getByRole('button',{name:'查看提示',exact:true}).click();await help.getByLabel('预测结果').selectOption('changed');await help.getByLabel('反例依据').fill('以相邻整数构造反例');await help.getByRole('button',{name:'提交反例并核对',exact:true}).click();await expect(help.getByTestId('live-model')).toContainText('提示后完成');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});

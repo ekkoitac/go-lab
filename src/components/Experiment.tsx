@@ -5,14 +5,24 @@ import AdvancedLabs from './AdvancedLabs';
 import Scene from './Scene';
 import {sceneChanges} from './scene-changes';
 import ArchitectureMetrics from './ArchitectureMetrics';
+const DatabaseChapterLab=lazy(()=>import('./database-lab/DatabaseChapterLab'));
+const ArchitectureChapterLab=lazy(()=>import('./architecture-lab/ArchitectureChapterLab'));
 const ChannelChapterLab=lazy(()=>import('./channel-lessons/ChannelLessons'));
+const TestingChapterLab=lazy(()=>import('./testing-lab/TestingChapterLab'));
 const IOChapterLab=lazy(()=>import('./io-lab/IOChapterLab'));
 const SyncLab=lazy(()=>import('./sync-lab/SyncLab'));
-const BoundedLab=lazy(()=>import('./bounded-lab/BoundedLab'));
+const ConcurrencyChapterLab=lazy(()=>import('./concurrency-lab/ConcurrencyChapterLab'));
+const EngineeringChapterLab=lazy(()=>import('./engineering-lab/EngineeringChapterLab'));
+const DataBoundaryChapter=lazy(()=>import('./data-boundary-lab/DataBoundaryChapter'));
 export default function Experiment({lesson}:{lesson:Lesson}) {
+ if(lesson.id>=131&&lesson.id<=140)return <Suspense fallback={<p>正在加载数据库实验…</p>}><DatabaseChapterLab key={lesson.id} lesson={lesson}/></Suspense>;
+ if(lesson.id>=71&&lesson.id<=80)return <Suspense fallback={<p>正在加载数据边界实验…</p>}><DataBoundaryChapter key={lesson.id} lesson={lesson}/></Suspense>;
+ if(lesson.id>=101&&lesson.id<=120)return <Suspense fallback={<p>正在加载架构实验…</p>}><ArchitectureChapterLab key={lesson.id} lesson={lesson}/></Suspense>;
+ if(lesson.id>=91&&lesson.id<=100)return <Suspense fallback={<p>正在加载工程实践实验…</p>}><EngineeringChapterLab key={lesson.id} lesson={lesson}/></Suspense>;
+ if(lesson.id>=81&&lesson.id<=90)return <Suspense fallback={<p>正在加载测试实验…</p>}><TestingChapterLab key={lesson.id} lesson={lesson}/></Suspense>;
  if(lesson.id>=61&&lesson.id<=70)return <Suspense fallback={<p>正在加载本题实验…</p>}><IOChapterLab key={lesson.id} lesson={lesson}/></Suspense>;
  if(lesson.id>=41&&lesson.id<=50)return <Suspense fallback={<p>正在加载同步实验…</p>}><SyncLab key={lesson.id} lesson={lesson}/></Suspense>;
- if(lesson.id===121)return <Suspense fallback={<p>正在加载并发实验…</p>}><BoundedLab/></Suspense>;
+ if(lesson.id>=121&&lesson.id<=130)return <Suspense fallback={<p>正在加载并发实验…</p>}><ConcurrencyChapterLab key={lesson.id} lesson={lesson}/></Suspense>;
 
  if(lesson.id>=51&&lesson.id<=60)return <Suspense fallback={<p>正在加载交互实验…</p>}><ChannelChapterLab key={lesson.id} lesson={lesson}/></Suspense>;
  return <PresetExperiment lesson={lesson}/>;

@@ -1,0 +1,75 @@
+import { test, expect, type Locator, type Page } from '@playwright/test';
+async function open(page: Page) { await page.goto('/#lesson/111'); await page.getByRole('button', { name: '动手观察', exact: true }).click(); const lab = page.getByTestId('architecture-lab-111'); await expect(lab).toBeVisible(); return lab; }
+async function step(lab: Locator, count = 1) { for (let i = 0; i < count; i++) await lab.locator('[data-arch-action=step]').click(); }
+async function finish(lab: Locator) { for (let i = 0; i < 14 && await lab.locator('[data-arch-action=step]').isEnabled(); i++) await step(lab); }
+async function help(page: Page, mode: string) { await page.locator('.help-panel').getByRole('button', { name: mode, exact: true }).click(); const panel = page.getByTestId('architecture-help-111'); await expect(panel).toBeVisible(); return panel; }
+test('111 visible sequence separates timeout, task acceptance, completion and query', async ({ page }) => {
+  const lab = await open(page);
+  await lab.getByLabel('预测结果', { exact: true }).selectOption('timeout');
+  await lab.getByLabel('预测理由', { exact: true }).fill('处理比等待预算长');
+  await step(lab, 3);
+  await expect(lab.getByTestId('status-client')).toHaveText('等待超时，结果未知');
+  await expect(lab.getByTestId('status-service')).toHaveText('处理中 2/4');
+  await finish(lab);
+  await expect(lab.getByTestId('status-service')).toHaveText('业务处理完成');
+  await expect(lab.getByTestId('status-client')).toHaveText('等待超时，结果未知');
+  await expect(lab.locator('.arch111-feedback')).toContainText('结果一致');
+  await lab.getByLabel('交互方式', { exact: true }).selectOption('task');
+  await expect(lab.getByTestId('status-service')).toHaveText('空闲');
+  await step(lab, 2);
+  await expect(lab.getByTestId('status-task')).toHaveText('T-111 已记录');
+  await expect(lab.locator('.arch111-facts')).toContainText('业务结果：尚未生成');
+  await step(lab, 4);
+  await expect(lab.getByTestId('status-service')).toHaveText('业务处理完成');
+  await expect(lab.getByTestId('status-client')).toHaveText('持有任务编号，尚未查询');
+  await step(lab);
+  await expect(lab.getByTestId('status-client')).toHaveText('查询后取得业务结果');
+  await lab.getByLabel('业务场景', { exact: true }).selectOption('browser');
+  await lab.getByLabel('传输方案', { exact: true }).selectOption('grpc');
+  await step(lab);
+  await expect(lab.getByTestId('status-client')).toHaveText('接入／交互被阻断');
+  await lab.getByLabel('启用浏览器网关／客户端适配').check();
+  await finish(lab);
+  await expect(lab.getByTestId('status-client')).toHaveText('查询后取得业务结果');
+});
+for (const width of [1440, 390]) test(`111 four independent aids change visible models and require reasoning at ${width}px`, async ({ page }) => {
+  await page.setViewportSize({ width, height: 1000 });
+  const formal: string[] = []; page.on('request', request => { if (request.method() === 'POST' && /\/progress\/\d+\/(attempt|reveal)$/.test(request.url())) formal.push(request.url()); });
+  const lab = await open(page); await step(lab);
+  const mainState = await lab.getByTestId('live-model').getAttribute('data-state');
+  const notebook = await page.getByRole('textbox', { name: '架构决策记录' }).inputValue();
+  let panel = await help(page, '举例子');
+  await panel.getByLabel('柜台安排').selectOption('task'); await step(panel, 2);
+  await expect(panel.getByTestId('status-task')).toHaveText('T-111 已记录');
+  await expect(panel.getByTestId('status-service')).toHaveText('等待执行');
+  panel = await help(page, '画图');
+  await panel.getByRole('button', { name: /服务端处理/ }).click(); await step(panel, 3);
+  await expect(panel.getByTestId('status-service')).toHaveText('处理中 1/2');
+  await expect(panel.locator('.arch111-selected')).toContainText('服务端处理 1/2');
+  panel = await help(page, '拆步骤'); await finish(panel);
+  await expect(panel.getByTestId('status-client')).toHaveText('等待超时，结果未知');
+  await panel.getByLabel('修复选择').selectOption('task'); await finish(panel);
+  await expect(panel.getByTestId('status-client')).toHaveText('查询后取得业务结果');
+  await panel.locator('[data-arch-action=back]').click();
+  await expect(panel.getByTestId('status-client')).toHaveText('持有任务编号，尚未查询');
+  panel = await help(page, '让我试试');
+  await expect(panel.getByTestId('challenge-feedback')).toHaveCount(0);
+  await panel.getByLabel('你的判断').selectOption('task');
+  await expect(panel.getByRole('button', { name: '提交并看反馈' })).toBeDisabled();
+  await panel.getByLabel('判断理由').fill('接收和完成不同，先交接满足等待预算');
+  await panel.getByRole('button', { name: '提交并看反馈' }).click();
+  await expect(panel.getByTestId('challenge-feedback')).toContainText('方案符合本情境约束');
+  await panel.getByRole('button', { name: '换一个情境' }).click();
+  await expect(panel.getByTestId('challenge-feedback')).toHaveCount(0);
+  await panel.getByLabel('你的判断').selectOption('sync');
+  await panel.getByLabel('判断理由').fill('接入已可用，处理恰好在预算内');
+  await panel.getByRole('button', { name: '提交并看反馈' }).click();
+  await expect(panel.getByTestId('challenge-feedback')).toContainText('方案符合本情境约束');
+  await panel.getByRole('button', { name: '重试本题' }).click();
+  await expect(panel.getByTestId('challenge-feedback')).toHaveCount(0);
+  await expect(lab.getByTestId('live-model')).toHaveAttribute('data-state', mainState!);
+  await expect(page.getByRole('textbox', { name: '架构决策记录' })).toHaveValue(notebook);
+  expect(formal).toEqual([]);
+  expect(await panel.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+});

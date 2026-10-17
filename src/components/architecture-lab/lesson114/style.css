@@ -1,0 +1,49 @@
+.arch114 { min-width: 0; color: #283b4a; line-height: 1.65; }
+.arch114 h3,.arch114 h4 { margin: 0 0 10px; color: #143a4b; }
+.arch114 p { margin: 9px 0; overflow-wrap: anywhere; }
+.arch114-kicker { font-size: 11px; letter-spacing: .12em; color: #176d72; }
+.arch114 label { display: grid; gap: 5px; font-size: 13px; min-width: 0; margin: 8px 0; }
+.arch114 select,.arch114 input:not([type=checkbox]),.arch114 textarea { min-width: 0; width: 100%; box-sizing: border-box; padding: 8px; background: #ffffff; border: 1px solid #c7d8db; border-radius: 7px; color: #223f4b; font: inherit; }
+.arch114 textarea { min-height: 88px; resize: vertical; }
+.arch114 .arch114-check { display: flex; align-items: center; gap: 8px; }
+.arch114 fieldset { margin: 12px 0; padding: 12px; border: 1px solid #c7d8db; min-width: 0; border-radius: 8px; }
+.arch114 legend { padding: 0 5px; font-size: 13px; }
+.arch114-controls { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,200px),1fr)); gap: 10px; }
+.arch114-board { padding: 12px; border: 1px solid #c7d8db; border-radius: 10px; background: #f7fbfc; }
+.arch114-writer { display: grid; gap: 6px; padding: 12px; background: #edf3f6; border-radius: 7px; }
+.arch114 code { white-space: normal; overflow-wrap: anywhere; font-size: 12px; }
+.arch114-readers { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,150px),1fr)); gap: 8px; margin: 12px 0; }
+.arch114 button { min-height: 38px; border: 1px solid #b7cfd6; background: #ffffff; color: #27586a; padding: 8px 12px; border-radius: 7px; font: inherit; cursor: pointer; white-space: normal; overflow-wrap: anywhere; }
+.arch114 button:disabled { opacity: 1; color: #596f7d; background: #edf2f5; border-color: #cbd7dd; cursor: default; }
+.arch114-readers button { display: grid; gap: 4px; text-align: left; padding: 10px; min-width: 0; }
+.arch114-readers button:disabled { opacity: 1; }
+.arch114-readers span,.arch114-readers small { font-size: 12px; }
+.arch114 .selected { background: #daf4e9; border-color: #27868c; }
+.arch114 :focus-visible { outline: 2px solid #b4771a; outline-offset: 3px; }
+.arch114 table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12px; }
+.arch114 th,.arch114 td { padding: 8px 5px; border-bottom: 1px solid #c7d8db; text-align: left; overflow-wrap: anywhere; }
+.arch114 th:first-child { width: 20%; }
+.arch114-counts { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 12px 0; font-size: 13px; }
+.arch114-counts b { font-size: 18px; color: #176d5a; }
+.arch114-deliveries { display: grid; gap: 8px; padding: 0; list-style: none; }
+.arch114-deliveries li { display: grid; gap: 4px; padding: 10px; background: #f3f7f7; border-left: 3px solid #8199a3; font-size: 13px; overflow-wrap: anywhere; }
+.arch114-deliveries li[data-status=retry] { border-color: #c45d34; }
+.arch114-deliveries li[data-status=held] { border-color: #b68a22; }
+.arch114-deliveries li[data-status=done] { border-color: #218667; }
+.arch114-feedback,.arch114-selection { margin-top: 12px; padding: 12px; background: #edf7f6; border-left: 3px solid #328b82; border-radius: 5px; }
+.arch114-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.arch114-note { color: #596f7d; font-size: 12px; }
+.arch114-help .arch114-readers { grid-template-columns: 1fr; }
+.arch114-help .arch114-board { padding: 8px; }
+@media (max-width: 500px) { .arch114-controls,.arch114-readers { grid-template-columns: 1fr; } .arch114-board { padding: 8px; } .arch114-actions button { flex: 1 1 auto; } }
+@media (prefers-reduced-motion: reduce) { .arch114 * { animation: none !important; transition: none !important; } }
+
+.arch114 legend{color:#29475a}.arch114 pre{color:#264c61}.arch114 input:disabled,.arch114 select:disabled,.arch114 textarea:disabled{opacity:1;color:#596f7d;-webkit-text-fill-color:#596f7d;background:#f3f6f8}.arch114 input::placeholder,.arch114 textarea::placeholder{color:#657681;opacity:1}
+
+
+
+/* Keep local teaching copy readable over the shared help-content paragraph palette. */
+.help-content .arch114 p,.help-content .arch114 li{color:#283b4a;opacity:1}
+.help-content .arch114 small{color:#526875;opacity:1}
+.help-content .arch114 .arch114-note{color:#526875;opacity:1}
+.help-content .arch114 .arch114-kicker{color:#176d72;opacity:1}

@@ -1,0 +1,37 @@
+.arch109 { color: #243449; min-width: 0; line-height: 1.6; }
+.arch109 * { box-sizing: border-box; }
+.arch109 h3, .arch109 h4 { line-height: 1.4; margin: 0 0 10px; }
+.arch109 p { margin: 10px 0; }
+.arch109 fieldset { border: 1px solid #cad9e7; border-radius: 12px; padding: 14px; margin: 14px 0; min-width: 0; }
+.arch109 legend { font-weight: 650; max-width: 100%; }
+.arch109 label { display: block; min-width: 0; overflow-wrap: anywhere; }
+.arch109 select, .arch109 textarea, .arch109 input:not([type=checkbox]) { display: block; width: 100%; max-width: 100%; border: 1px solid #bdccda; border-radius: 7px; background: white; padding: 8px; color: inherit; font: inherit; }
+.arch109 textarea { min-height: 68px; resize: vertical; }
+.arch109 input[type=checkbox] { margin-right: 7px; accent-color: #2867a3; }
+.a109-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr)); gap: 12px; }
+.a109-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.arch109 button { border: 1px solid #adc5dc; border-radius: 8px; background: #eef6ff; padding: 8px 12px; cursor: pointer; color: #214e75; font: inherit; white-space: normal; }
+.arch109 button[aria-pressed=true] { background: #d6e9fa; border-color: #306d9e; }
+.arch109 button:disabled { opacity: .5; cursor: default; }
+.arch109 :focus-visible { outline: 3px solid #2672ba; outline-offset: 3px; }
+.a109-results { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(235px, 100%), 1fr)); gap: 12px; }
+.a109-result { min-width: 0; border: 1px solid #cddce8; border-radius: 12px; padding: 14px; background: #fbfdff; overflow-wrap: anywhere; }
+.a109-boundary { display: flex; flex-direction: column; gap: 7px; margin: 12px 0; min-width: 0; }
+.a109-process { border: 2px solid #6d9cbd; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 5px; background: #edf6fb; }
+.a109-extension { border: 1px dashed #7d91a7; border-radius: 6px; padding: 7px; background: white; }
+.a109-failed { border-color: #b85953; background: #fff2ef; }
+.a109-wire { text-align: center; font-size: .9em; color: #536d84; overflow-wrap: anywhere; }
+.arch109 dl { margin: 10px 0; }
+.arch109 dl > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 5px; border-bottom: 1px solid #e0e8ef; padding: 6px 0; }
+.arch109 dt { color: #5b6d80; }
+.arch109 dd { margin: 0; font-weight: 600; }
+.a109-cause { border-left: 3px solid #5b94bc; padding-left: 10px; font-size: .94em; }
+.a109-trace, .a109-file { background: #f0f5f9; border-radius: 10px; padding: 12px; margin-top: 12px; overflow-wrap: anywhere; }
+.arch109 ol, .arch109 ul { padding-left: 24px; }
+.arch109 li + li { margin-top: 8px; }
+.a109-note { color: #5b6b7b; font-size: .88em; }
+.arch109 summary { cursor: pointer; color: #2867a3; }
+.arch109 details label { margin-top: 10px; }
+.a109-help fieldset > label + label { margin-top: 12px; }
+@media (max-width: 540px) { .a109-results { grid-template-columns: 1fr; } .arch109 fieldset { padding: 10px; } }
+@media (prefers-reduced-motion: reduce) { .arch109 *, .arch109 *::before, .arch109 *::after { animation: none !important; transition: none !important; } }

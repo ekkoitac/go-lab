@@ -1,0 +1,24 @@
+import {test,expect} from '@playwright/test';
+for(const width of [1440,390])test(`71 field model, prediction, comparison and distinct help at ${width}px`,async({page})=>{
+ await page.setViewportSize({width,height:1000});await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/#lesson/71');await page.getByRole('button',{name:'动手观察',exact:true}).click();
+ const lab=page.getByTestId('data-boundary-lab-71'),model=lab.getByTestId('live-model');
+ await expect(lab.getByRole('button',{name:'单步检查',exact:true})).toBeDisabled();
+ await lab.getByLabel('预测输出键（逗号分隔，没有则填“无”）').fill('status');await lab.getByLabel('预测理由',{exact:true}).fill('标签应该公开字段');
+ await lab.getByRole('button',{name:'记录预测',exact:true}).click();await lab.getByRole('button',{name:'单步检查',exact:true}).focus();await page.keyboard.press('Enter');
+ await expect(lab.locator('[data-field=status]')).toHaveAttribute('data-result','skipped');
+ await lab.getByRole('button',{name:'单步检查',exact:true}).click();await lab.getByRole('button',{name:'单步检查',exact:true}).click();
+ expect(JSON.parse((await model.getAttribute('data-state'))!).output).toEqual({});
+ await lab.getByLabel('根据哪条证据修正解释？').fill('标签不能将小写字段导出');await lab.getByRole('button',{name:'保存为基线',exact:true}).click();
+ await lab.getByRole('button',{name:'回退一步',exact:true}).click();await lab.getByRole('button',{name:'单步检查',exact:true}).click();
+ await lab.getByLabel('导出 Status',{exact:true}).check();await expect(lab.getByLabel('预测理由',{exact:true})).toHaveValue('');expect(JSON.parse((await model.getAttribute('data-state'))!).cursor).toBe(0);
+ await lab.getByRole('button',{name:'自由实验',exact:true}).click();for(let i=0;i<3;i++)await lab.getByRole('button',{name:'单步检查',exact:true}).click();
+ expect(JSON.parse((await model.getAttribute('data-state'))!).output).toEqual({status:'paid'});await expect(lab.locator('[data-field=status]')).toHaveAttribute('data-result','included');
+ const editor=await page.locator('.cm-content').first().textContent();
+ await page.locator('.help-panel').getByRole('button',{name:'字段去哪了',exact:true}).click();let help=page.getByTestId('data-boundary-help-71');
+ await help.getByLabel('导出 Status',{exact:true}).check();await expect(help.locator('[data-field=status]')).toHaveAttribute('data-result','included');
+ await page.locator('.help-panel').getByRole('button',{name:'逐字段过筛',exact:true}).click();help=page.getByTestId('data-boundary-help-71');await help.getByLabel('这个字段会进入输出吗？').selectOption('yes');await help.getByRole('button',{name:'核对当前字段',exact:true}).click();await expect(help.getByRole('status')).toContainText('判断正确');
+ await page.locator('.help-panel').getByRole('button',{name:'修复订单契约',exact:true}).click();help=page.getByTestId('data-boundary-help-71');await expect(help.getByRole('status')).toHaveCount(0);
+ await help.getByLabel('导出 Status',{exact:true}).check();await help.getByRole('combobox',{name:'Token 标签',exact:true}).selectOption('-');await help.getByLabel('Note omitempty',{exact:true}).uncheck();await help.getByLabel('修复理由',{exact:true}).fill('导出状态，排除令牌，保留空备注');await help.getByRole('button',{name:'验证修复',exact:true}).click();await expect(help.getByRole('status')).toContainText('契约匹配 · 首次独立尝试');
+ expect(await page.locator('.cm-content').first().textContent()).toBe(editor);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});

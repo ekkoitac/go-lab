@@ -1,0 +1,48 @@
+.arch111 { min-width: 0; color: #283b4a; line-height: 1.65; }
+.arch111 h3,.arch111 h4 { margin: 0 0 10px; color: #143a4b; }
+.arch111 p { margin: 9px 0; overflow-wrap: anywhere; }
+.arch111-kicker { font-size: 11px; letter-spacing: .12em; color: #176d72; }
+.arch111-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 12px; margin: 18px 0; }
+.arch111 label { display: grid; gap: 5px; font-size: 13px; min-width: 0; margin-bottom: 10px; }
+.arch111 select,.arch111 input:not([type=checkbox]),.arch111 textarea { min-width: 0; width: 100%; max-width: 100%; box-sizing: border-box; padding: 9px; background: #ffffff; border: 1px solid #c7d8db; border-radius: 7px; color: #223f4b; font: inherit; }
+.arch111 textarea { min-height: 88px; resize: vertical; }
+.arch111 .arch111-check { display: flex; align-items: center; gap: 8px; }
+.arch111 fieldset { margin: 14px 0; padding: 12px; border: 1px solid #c7d8db; min-width: 0; border-radius: 8px; }
+.arch111 fieldset input { margin-top: 8px; }
+.arch111 legend { padding: 0 5px; font-size: 13px; }
+.arch111-board { padding: 14px; border: 1px solid #c7d8db; border-radius: 12px; background: #f7fbfc; }
+.arch111-nodes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap: 9px; }
+.arch111 button { min-height: 38px; border: 1px solid #b7cfd6; background: #ffffff; color: #27586a; padding: 8px 12px; border-radius: 7px; font: inherit; cursor: pointer; white-space: normal; overflow-wrap: anywhere; }
+.arch111 button:disabled { opacity: 1; color: #596f7d; background: #edf2f5; border-color: #cbd7dd; cursor: default; }
+.arch111-nodes button { display: grid; gap: 6px; text-align: left; padding: 12px; min-width: 0; }
+.arch111-nodes button:disabled { opacity: 1; }
+.arch111-nodes button span { font-size: 13px; }
+.arch111-nodes button.selected { border-color: #27868c; background: #daf4e9; box-shadow: inset 0 0 0 1px #27868c; }
+.arch111 :focus-visible { outline: 2px solid #b4771a; outline-offset: 3px; }
+.arch111-edge { margin: 12px 0; padding: 8px; border-left: 3px solid #50979b; background: #edf3f6; font-size: 13px; }
+.arch111-edge[data-edge=accept] { border-color: #b4771a; }
+.arch111-edge[data-edge=result] { border-color: #218667; }
+.arch111 progress { width: 100%; height: 12px; accent-color: #148185; }
+.arch111-facts { display: flex; flex-wrap: wrap; gap: 7px 18px; font-size: 12px; color: #4e6777; }
+.arch111-feedback,.arch111-selected { margin-top: 12px; padding: 12px; background: #edf7f6; border-left: 3px solid #328b82; border-radius: 5px; }
+.arch111-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.arch111-note { color: #596f7d; font-size: 12px; }
+.arch111-constraint { padding: 10px; border-left: 3px solid #bd702a; background: #fff0de; font-size: 13px; }
+.arch111-timeline { padding-left: 22px; font-size: 13px; }
+.arch111-timeline li { padding: 5px 0 5px 7px; overflow-wrap: anywhere; }
+.arch111-timeline li span { display: inline-block; margin-right: 8px; font-weight: 700; color: #176d72; }
+.arch111-timeline li[aria-current=step] { background: #edf3f6; border-radius: 4px; }
+.arch111-help .arch111-nodes { grid-template-columns: 1fr; }
+.arch111-help .arch111-board { padding: 10px; }
+@media (max-width: 500px) { .arch111-controls,.arch111-nodes { grid-template-columns: 1fr; } .arch111-board { padding: 10px; } .arch111-actions button { flex: 1 1 auto; } }
+@media (prefers-reduced-motion: reduce) { .arch111 * { animation: none !important; transition: none !important; } }
+
+.arch111 legend{color:#29475a}.arch111 pre{color:#264c61}.arch111 input:disabled,.arch111 select:disabled,.arch111 textarea:disabled{opacity:1;color:#596f7d;-webkit-text-fill-color:#596f7d;background:#f3f6f8}.arch111 input::placeholder,.arch111 textarea::placeholder{color:#657681;opacity:1}
+
+
+
+/* Keep local teaching copy readable over the shared help-content paragraph palette. */
+.help-content .arch111 p,.help-content .arch111 li{color:#283b4a;opacity:1}
+.help-content .arch111 small{color:#526875;opacity:1}
+.help-content .arch111 .arch111-note{color:#526875;opacity:1}
+.help-content .arch111 .arch111-kicker{color:#176d72;opacity:1}

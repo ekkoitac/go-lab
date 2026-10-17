@@ -16,16 +16,43 @@ test('双学习路径分别展示目录、进度、最近课程和末课导航',
  await page.goto('/#lesson/100');await page.getByRole('button',{name:'迁移与复测',exact:true}).click();await page.getByRole('button',{name:'回到本路径第一课',exact:true}).click();await expect(page).toHaveURL(/#lesson\/1$/);
  await page.getByRole('button',{name:/Go 架构师 100 题/}).click();await page.getByRole('button',{name:'继续上次学习',exact:true}).click();await expect(page).toHaveURL(/#lesson\/101$/);
 });
-test('100个架构课图解能渲染，两个实验分支均改变可见状态',async({page})=>{
+test('100个架构课图解能渲染，专用实验可加载，通用实验分支改变可见状态',async({page})=>{
  test.setTimeout(420000);const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  for(const lesson of architecture){
   await page.goto('/#lesson/'+lesson.id);await expect(page.locator('.lesson-heading h1')).toHaveText(lesson.title);
   await page.getByRole('button',{name:'动手观察',exact:true}).click();
-  if(lesson.id===121){
-   const lab=page.getByTestId('bounded-lab');await expect(lab).toBeVisible();
-   await lab.getByRole('button',{name:'提交这一批',exact:true}).click();
-   await expect(lab.getByTestId('board-direct').getByTestId('lane-running').getByRole('button')).toHaveCount(8);
-   await expect(lab.getByTestId('board-workers').getByTestId('lane-running').getByRole('button')).toHaveCount(2);
+  if(lesson.id>=101&&lesson.id<=120){
+   // Dedicated behavior, rewinding, help isolation, and responsive layout live in architecture-labs.spec.ts.
+   await expect(page.getByTestId('architecture-lab-'+lesson.id).getByTestId('live-model').first()).toBeVisible();
+  }else if(lesson.id>=131&&lesson.id<=140){
+   const lab=page.getByTestId('database-lab-'+lesson.id);
+   await expect(lab.getByTestId('live-model').first()).toBeVisible();
+   const before=await lab.getByTestId('live-model').first().getAttribute('data-state');
+   if(lesson.id===131){await lab.getByLabel('下一步全部池上限 + 预留 = ?').fill('420');await lab.getByLabel('理由（包含副本数或计算式）').fill('12 个池乘以 30 加 60');}
+   if(lesson.id===133){await lab.getByLabel('最终可确认的结果').selectOption('rolledback');await lab.getByLabel('你的依据').fill('同一事务丢弃草稿');}
+   if(lesson.id===134){await lab.getByLabel('这个动作的结果').selectOption('locked');await lab.getByLabel('动作后已提交的在线人数').selectOption('2');await lab.getByLabel('我的理由').fill('申请锁不改变已提交人数');}
+   if(lesson.id===135){await lab.getByLabel('单步后 broker 累计接收次数').fill('0');await lab.getByLabel('单步后累计业务效果次数').fill('0');await lab.getByLabel('你的理由').fill('只提交记录尚未投递');}
+   if(lesson.id===136)await lab.getByLabel('为什么？').fill('外部操作产生持久影响');
+   if(lesson.id===137){await lab.getByRole('radio',{name:'旧昵称 v8',exact:true}).check();await lab.getByLabel('我的理由').fill('副本尚未应用位点');}
+   if(lesson.id===138){await lab.getByLabel('先预测本次动作结果').selectOption('ok');await lab.getByLabel('我的理由').fill('新增列保留旧列');}
+   await lab.locator('[data-db-action=step]').first().click();
+   await expect(lab.getByTestId('live-model').first()).not.toHaveAttribute('data-state',before!);
+  }else if(lesson.id>=121&&lesson.id<=130){
+   const lab=page.getByTestId('concurrency-lab-'+lesson.id);
+   await expect(lab.getByTestId('live-model').first()).toBeVisible();
+   const before=await lab.getByTestId('live-model').first().getAttribute('data-state');
+   if(lesson.id===126)await lab.getByRole('combobox',{name:'提交前预测 B 的结果',exact:true}).selectOption('false-success');
+   if(lesson.id===127)await lab.getByRole('combobox',{name:'先预测：旧读者最终读到哪个后端？',exact:true}).selectOption('green');
+   if(lesson.id===129)await lab.getByRole('combobox',{name:'预测读到的配置',exact:true}).selectOption('mixed');
+   if(lesson.id===130)await lab.getByRole('combobox',{name:'预测请求结束后任务状态',exact:true}).selectOption('canceling');
+   if(lesson.id===128)await lab.getByRole('combobox',{name:'预测 B 是否等待',exact:true}).selectOption('free');
+   if(lesson.id===124)await lab.getByLabel('预测退出结果',{exact:true}).selectOption('unsafe');
+   if(lesson.id===125)await lab.getByRole('combobox',{name:'轮转下一位',exact:true}).selectOption('A');
+   if(lesson.id===123)await lab.getByRole('combobox',{name:'预测',exact:true}).selectOption('degraded');
+   if(lesson.id===122)await lab.getByRole('radio',{name:'能，推荐可以缺省'}).check();
+   if(lesson.id===121){await lab.getByLabel('预测执行数',{exact:true}).selectOption('2');await lab.getByLabel('预测工作G数',{exact:true}).selectOption('8');}
+   await lab.locator('[data-concurrency-action=step]').first().click();
+   await expect(lab.getByTestId('live-model').first()).not.toHaveAttribute('data-state',before!);
   }else{
   const panel=page.locator('.learning-column .experiment-panel'),scene=panel.getByTestId('experiment-scene');
   for(let i=0;i<lesson.experiment.scenarios.length;i++){

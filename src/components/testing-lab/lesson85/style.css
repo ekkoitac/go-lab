@@ -1,0 +1,22 @@
+.testing-85 { display: grid; gap: 14px; min-width: 0; line-height: 1.65; }
+.testing-85 h3,.testing-85 h4,.testing-85 p { margin: 0 0 10px; }
+.testing-85 .t85-workbench { display: grid; gap: 14px; min-width: 0; }
+.testing-85 .t85-note { padding: 10px 14px; border-left: 3px solid #d6b76a; background: #fff8e8; }
+.testing-85 .t85-controls,.testing-85 .t85-lanes { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.testing-85 label { display: grid; gap: 5px; min-width: 0; }
+.testing-85 input,.testing-85 select,.testing-85 textarea { box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; padding: 8px; border: 1px solid #a9c5bf; border-radius: 7px; background: #ffffff; color: #243c3d; font: inherit; }
+.testing-85 input[type=checkbox] { width: auto; justify-self: start; }
+.testing-85 fieldset { display: grid; gap: 12px; min-width: 0; padding: 12px; border: 1px solid #a9c5bf; border-radius: 8px; }
+.testing-85 .t85-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.testing-85 button { padding: 8px 12px; border: 1px solid #a9c5bf; border-radius: 7px; background: #edf6f2; color: #243c3d; font: inherit; cursor: pointer; white-space: normal; overflow-wrap: anywhere; }
+.testing-85 button[aria-pressed=true] { border-color: #357b65; background: #d7eee4; }
+.testing-85 button:disabled { opacity: .45; cursor: default; }
+.testing-85 button:focus-visible,.testing-85 select:focus-visible,.testing-85 input:focus-visible,.testing-85 textarea:focus-visible { outline: 3px solid #357b65; outline-offset: 2px; }
+.testing-85 .t85-model { border: 1px solid #a9c5bf; border-radius: 10px; padding: 14px; min-width: 0; overflow-wrap: anywhere; }
+.testing-85 .t85-memory,.testing-85 .t85-lockmap { display: grid; gap: 6px; padding: 12px; border-radius: 8px; background: #eef7f3; margin-bottom: 12px; }
+.testing-85 article { padding: 12px; border: 1px solid #a9c5bf; border-radius: 8px; min-width: 0; }
+.testing-85 ol { padding-left: 24px; }
+.testing-85 li { margin-bottom: 8px; }
+.testing-85 .t85-feedback { padding: 14px; border: 1px solid #357b65; border-radius: 9px; }
+@media(max-width:600px) { .testing-85 .t85-controls,.testing-85 .t85-lanes { grid-template-columns: 1fr; } .testing-85 .t85-model { padding: 10px; } }
+

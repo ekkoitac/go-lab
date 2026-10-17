@@ -1,0 +1,10 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {start,step,run,result,type Config} from '../src/components/engineering-lab/lesson93/model';
+const base:Config={count:3,capacity:3,init:'reserve',method:'append'};
+test('reserved capacity is not length and appending preserves exact output',()=>{const s=start(base);assert.equal(s.values.length,0);assert.equal(s.capacity,3);const end=run(base);assert.deepEqual(end.values,[1,2,3]);assert.equal(end.growths,0);assert.equal(end.copied,0);});
+test('length allocation followed by append leaves leading zeros',()=>{const s=run({...base,init:'length'});assert.deepEqual(s.values,[0,0,0,1,2,3]);assert.equal(result(s),'zeros');assert.equal(s.growths,1);assert.equal(s.copied,3);});
+test('index filling requires length even when capacity is sufficient',()=>{const s=run({...base,method:'index'});assert.equal(s.panic,true);assert.deepEqual(s.values,[]);assert.equal(s.capacity,3);assert.deepEqual(run({...base,init:'length',method:'index'}).values,[1,2,3]);});
+test('model growth copies old live elements only and overreservation retains unused slots',()=>{const empty=run({...base,init:'empty'});assert.equal(empty.growths,3);assert.equal(empty.copied,3);assert.equal(empty.capacity,4);const large=run({...base,capacity:8});assert.equal(large.capacity-large.values.length,5);assert.equal(large.growths,0);});
+test('underestimated capacity grows while retaining values and immutable snapshots',()=>{const initial=start({...base,count:4,capacity:2});const first=step(initial);const end=run(initial.config);assert.deepEqual(initial.values,[]);assert.deepEqual(first.values,[1]);assert.deepEqual(end.values,[1,2,3,4]);assert.equal(end.growths,1);assert.equal(end.copied,2);assert.equal(step(end),end);});
+test('invalid budgets are rejected before allocating model storage',()=>{assert.throws(()=>start({...base,count:0}));assert.throws(()=>start({...base,capacity:1000000000}));assert.throws(()=>start({...base,capacity:2.5}));});

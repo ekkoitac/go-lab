@@ -1,0 +1,27 @@
+.testing-81 { color: var(--text, #243c3d); line-height: 1.65; min-width: 0; }
+.testing-81 h3, .testing-81 h4 { margin: 0 0 .6rem; }
+.testing-81 p { margin: .6rem 0; }
+.testing-81 .t81-eyebrow { color: #256579; font-size: .8rem; letter-spacing: .06em; }
+.testing-81 .t81-contract, .testing-81 .t81-feedback, .testing-81 .t81-graph { background: #eff7f5; border: 1px solid #c5dcd5; border-radius: 12px; padding: 1rem; margin: 1rem 0; }
+.testing-81 .t81-controls, .testing-81 .t81-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; margin: 1rem 0; }
+.testing-81 label { display: grid; gap: .35rem; min-width: 0; margin: .5rem 0; }
+.testing-81 select, .testing-81 input, .testing-81 textarea { width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; background: #ffffff; color: #243c3d; border: 1px solid #576674; border-radius: 7px; padding: .6rem; font: inherit; }
+.testing-81 button { white-space: normal; background: #edf5f3; color: #254744; border: 1px solid #5b7183; border-radius: 8px; padding: .55rem .8rem; cursor: pointer; font: inherit; }
+.testing-81 button[aria-pressed="true"] { background: #d3eee5; border-color: #7cd1ed; }
+.testing-81 button:disabled { opacity: .5; cursor: default; }
+.testing-81 :focus-visible { outline: 3px solid #9cdbf6; outline-offset: 3px; }
+.testing-81 .t81-buttons, .testing-81 .t81-route { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; margin: .8rem 0; }
+.testing-81 .t81-route span, .testing-81 .t81-route code { background: #e6f0ee; padding: .5rem .65rem; border-radius: 6px; }
+.testing-81 .t81-grid article { padding: 1rem; border: 1px solid #43515e; border-radius: 10px; min-width: 0; }
+.testing-81 code { overflow-wrap: anywhere; white-space: normal; color: #264e4b; }
+.testing-81 .t81-pass { color: #14674a; }
+.testing-81 .t81-fail { color: #9e411e; }
+.testing-81 fieldset { min-width: 0; border: 1px solid #43515e; border-radius: 10px; padding: .8rem 1rem; }
+.testing-81 .t81-table-wrap { overflow-x: auto; }
+.testing-81 table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+.testing-81 th, .testing-81 td { padding: .55rem .4rem; text-align: left; border-bottom: 1px solid #44525d; }
+.testing-81 caption { text-align: left; margin-bottom: .5rem; }
+.testing-81 .t81-graph > div { padding: .7rem; border-left: 3px solid #79c3e7; margin: .5rem 0; background: #e1f0eb; }
+.testing-81 .t81-step-list { display: flex; flex-wrap: wrap; gap: .6rem 1.8rem; padding-left: 1.3rem; }
+.testing-81 [aria-current="step"] { color: #08676a; font-weight: bold; }
+@media (max-width: 600px) { .testing-81 .t81-controls, .testing-81 .t81-grid { grid-template-columns: 1fr; } .testing-81 .t81-contract, .testing-81 .t81-feedback, .testing-81 .t81-graph { padding: .75rem; } .testing-81 fieldset { padding: .65rem; } }

@@ -1,0 +1,10 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {start,step,finish,clientView,outcome,initialConfig} from '../src/components/data-boundary-lab/lesson77/model.ts';
+test('tx failure rolls back only pending changes',()=>{let s=start();s=step(step(s));assert.deepEqual(s.committed,{sender:100,recipient:40});assert.deepEqual(s.pending,{sender:-30,recipient:0});const done=finish(initialConfig);assert.equal(done.status,'rolled-back');assert.deepEqual(done.committed,{sender:100,recipient:40});assert.deepEqual(done.pending,{sender:0,recipient:0});});
+test('db failure leaves independently committed debit',()=>{const s=finish({...initialConfig,handle:'db'});assert.deepEqual(s.committed,{sender:70,recipient:40});assert.equal(outcome(s),'partial');});
+test('successful transfer preserves total and deferred rollback has no effect',()=>{let s=start({...initialConfig,valid:true});for(let i=0;i<5;i++)s=step(s);assert.equal(s.status,'committed');assert.deepEqual(s.committed,{sender:70,recipient:70});assert.deepEqual(step(s).committed,s.committed);const done=step(s);assert.equal(step(done),done);});
+test('ambiguous commit hides both possible truths from client',()=>{const a=finish({...initialConfig,valid:true,commit:'unknown-applied'}),b=finish({...initialConfig,valid:true,commit:'unknown-aborted'});assert.deepEqual(a.committed,{sender:70,recipient:70});assert.deepEqual(b.committed,{sender:100,recipient:40});assert.deepEqual(clientView(a),clientView(b));assert.equal(clientView(a).committed,null);assert.equal(outcome(a),'unknown');});
+test('back and replay are deterministic and pure; fresh config clears progress',()=>{const a=start(),b=step(a),c=step(b);assert.equal(a.stage,0);assert.equal(b.pending.sender,0);assert.deepEqual(step(b),c);assert.equal(start({...initialConfig,amount:70}).stage,0);assert.deepEqual(start().pending,{sender:0,recipient:0});});
+test('all configured amounts maintain balance on successful tx transfer',()=>{for(const amount of [10,30,70]){const s=finish({...initialConfig,amount,valid:true});assert.equal(s.committed.sender+s.committed.recipient,140);assert.equal(s.committed.sender,100-amount);}});
+

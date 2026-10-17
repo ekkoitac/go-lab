@@ -1,0 +1,24 @@
+.arch103 { min-width:0; color:#263c4c; }
+.arch103 * { box-sizing:border-box; }
+.arch103 p { line-height:1.65; }
+.arch103 .a103-controls { display:flex; gap:10px; flex-wrap:wrap; margin:12px 0; }
+.arch103 label { display:flex; flex-direction:column; gap:5px; font-size:13px; min-width:0; max-width:100%; }
+.arch103 select,.arch103 input,.arch103 textarea { max-width:100%; min-width:0; border:1px solid #bccdd3; border-radius:8px; padding:8px; background:white; color:#243a48; font:inherit; }
+.arch103 textarea { width:100%; }
+.arch103 button { white-space:normal; border:1px solid #b8ccd1; padding:8px 12px; border-radius:8px; background:#f2f8f7; color:#204b4d; cursor:pointer; font:inherit; }
+.arch103 button:disabled { opacity:.5; cursor:default; }
+.arch103 button[aria-pressed=true] { background:#d9efec; border-color:#218579; }
+.arch103 :focus-visible { outline:3px solid #248e95; outline-offset:3px; }
+.arch103 .a103-panel { background:#f5f8fa; border:1px solid #d9e4e8; border-radius:12px; padding:12px; margin:12px 0; min-width:0; overflow-wrap:anywhere; }
+.arch103 .a103-edges { display:grid; gap:8px; list-style:none; padding:0; }
+.arch103 .a103-edges li { padding:10px; background:white; border:1px solid #cbdce0; border-radius:8px; }
+.arch103 .a103-edges li.active { background:#fff1da; border-color:#c58a31; }
+.arch103 .a103-edges small { display:block; margin-top:4px; line-height:1.5; }
+.arch103 .a103-status { padding:10px; border-left:3px solid #338a7f; background:#eaf6f2; line-height:1.7; }
+.arch103 .a103-trace { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+.arch103 .a103-trace span { padding:7px; border-radius:6px; background:#e2eff3; overflow-wrap:anywhere; }
+.arch103 table { width:100%; border-collapse:collapse; font-size:13px; table-layout:fixed; }
+.arch103 td,.arch103 th { text-align:left; padding:8px 5px; border-bottom:1px solid #d8e1e6; overflow-wrap:anywhere; }
+.arch103 .a103-muted { color:#667a86; font-size:12px; }
+@media(max-width:480px) { .arch103 .a103-controls>label { flex:1 1 100%; } .arch103 .a103-panel { padding:10px; } }
+@media(prefers-reduced-motion:reduce) { .arch103 * { transition:none!important; animation:none!important; } }
