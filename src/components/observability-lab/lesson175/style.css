@@ -1,0 +1,28 @@
+.obs175 { color:var(--text,#dce7f4); line-height:1.65; min-width:0; }
+.obs175 * { box-sizing:border-box; }
+.obs175 h3 { font-size:1.05rem; margin:0 0 .7rem; }
+.obs175 p { overflow-wrap:anywhere; }
+.obs175 label { display:block; font-size:.9rem; margin:.5rem 0; }
+.obs175 select,.obs175 textarea { display:block; width:100%; max-width:100%; margin-top:.35rem; padding:.55rem; border:1px solid #45546b; border-radius:7px; background:#141e2b; color:#e3eaf5; font:inherit; }
+.obs175 textarea { min-height:70px; resize:vertical; }
+.obs175 button { border:1px solid #556b86; border-radius:7px; padding:.45rem .75rem; color:#e0eefa; background:#24354a; cursor:pointer; font:inherit; white-space:normal; }
+.obs175 button:disabled { opacity:.45; cursor:default; }
+.obs175 button:focus-visible,.obs175 input:focus-visible,.obs175 select:focus-visible,.obs175 textarea:focus-visible { outline:3px solid #76d8dd; outline-offset:2px; }
+.obs175 button[aria-pressed=true] { background:#234e56; border-color:#76d8dd; }
+.obs175 fieldset { min-width:0; border:1px solid #425166; border-radius:9px; padding:.7rem; margin:.9rem 0; }
+.obs175-controls,.obs175-compare { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr)); gap:.7rem; }
+.obs175-actions,.obs175-metrics { display:flex; flex-wrap:wrap; gap:.6rem; margin:.8rem 0; }
+.obs175-metrics span { padding:.4rem .65rem; border-radius:6px; background:#1a2738; overflow-wrap:anywhere; }
+.obs175-flow { list-style:none; padding:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr)); gap:.65rem; }
+.obs175-flow li,.obs175-compare article { border:1px solid #40516a; border-radius:8px; padding:.7rem; background:#182434; min-width:0; overflow-wrap:anywhere; }
+.obs175-flow li.obs175-active { border-color:#66bfc7; background:#19343c; }
+.obs175-flow strong,.obs175-flow span,.obs175-flow small { display:block; }
+.obs175-flow small { margin-top:.45rem; color:#a7c0d2; }
+.obs175-feedback { margin:.8rem 0; padding:.8rem; border-left:3px solid #73c8ce; background:#192b39; border-radius:6px; }
+.obs175-feedback p:last-child { margin-bottom:0; }
+.obs175-note { color:#aebccf; font-size:.82rem; }
+.obs175-edge-list { display:grid; gap:.5rem; }
+.obs175-order { padding-left:1.4rem; }
+.obs175-order li { padding:.5rem 0; }
+.obs175-order li>div { display:flex; gap:.5rem; margin-top:.35rem; }
+@media(max-width:480px) { .obs175-controls,.obs175-flow,.obs175-compare { grid-template-columns:1fr; } .obs175-actions button { flex:1 1 110px; } }

@@ -1,0 +1,41 @@
+import {test,expect} from '@playwright/test';
+test('183: prediction gates execution, repairs change the modeled connection, rewind preserves history',async({page})=>{
+ await page.goto('/#lesson/183', {waitUntil:'domcontentloaded'});
+ await page.getByRole('button',{name:'动手观察',exact:true}).click();
+ const lab=page.getByTestId('security-lab-183');await expect(lab).toBeVisible();
+ const next=lab.getByRole('button',{name:'单步执行',exact:true});await expect(next).toBeDisabled();
+ await lab.getByLabel('我的预测').selectOption('internal');await lab.getByLabel('预测理由').fill('只检查了第一跳，自动跟随会访问新目标');
+ for(let i=0;i<4;i++)await next.click();
+ await expect(lab.getByTestId('live-model')).toHaveAttribute('data-state','redirect:4:internal');
+ await lab.getByRole('button',{name:'回退一步'}).click();await expect(lab.getByTestId('live-model')).toHaveAttribute('data-state','redirect:3:pending');
+ await lab.getByLabel('受控出口检查实际拨号地址').check();await expect(next).toBeDisabled();
+ await lab.getByLabel('我的预测').selectOption('blocked');await lab.getByLabel('预测理由').fill('第二跳实际拨号被出口拒绝');
+ for(let i=0;i<4;i++)await next.click();await expect(lab.getByTestId('live-model')).toHaveAttribute('data-state','redirect:4:blocked');
+ await expect(lab.getByTestId('live-model')).toContainText('仍只有一次公网连接');
+ await page.setViewportSize({width:320,height:820});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await lab.getByRole('button',{name:'重置推演'}).focus();await page.keyboard.press('Enter');await expect(lab.getByTestId('live-model')).toHaveAttribute('data-state','redirect:0:pending');
+});
+
+test('183 alternate explanation applies an actual destination check and new response budget', async ({page}) => {
+ await page.goto('/#lesson/183', {waitUntil:'domcontentloaded'});
+ await page.getByRole('button',{name:'动手观察',exact:true}).click();
+ const model=page.getByTestId('security-lab-183').getByTestId('live-model');
+ const before=await model.getAttribute('data-state');
+ const example=page.locator('.help-panel').getByRole('button',{name:'举例子',exact:true});
+ await example.click();await expect(example).toHaveClass(/selected/);
+ const help=page.getByTestId('security-help-183');
+ await help.getByRole('button',{name:'派送一次'}).click();
+ await expect(help.getByTestId('live-model')).toContainText('已抵达');
+ await help.getByLabel('出口门卫核对每次实际目的地').check();
+ await help.getByRole('button',{name:'派送一次'}).click();
+ await expect(help.getByTestId('live-model')).toContainText('未抵达');
+ const trial=page.locator('.help-panel').getByRole('button',{name:'让我试试',exact:true});
+ await trial.click();await expect(trial).toHaveClass(/selected/);
+ await help.getByLabel('我的预测').selectOption('limited');
+ await help.getByLabel('预测理由').fill('4KB合规但4秒超过3秒截止');
+ await help.getByRole('button',{name:'验证新情境'}).click();
+ await expect(help.getByRole('status')).toContainText('预测一致');
+ await help.getByLabel('传输耗时').selectOption('3');
+ await expect(help.getByRole('status')).toHaveCount(0);
+ await expect(model).toHaveAttribute('data-state',before!);
+});

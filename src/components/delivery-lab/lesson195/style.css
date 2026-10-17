@@ -1,0 +1,44 @@
+.dl195 { color: var(--text, #dbe4f1); min-width: 0; overflow-wrap: anywhere; line-height: 1.65; }
+.dl195 * { box-sizing: border-box; min-width: 0; }
+.dl195 h3 { margin: 0 0 12px; font-size: 1.1rem; }
+.dl195 h4 { margin: 0 0 10px; }
+.dl195 p { margin: 10px 0; }
+.dl195 fieldset { border: 1px solid #445269; border-radius: 12px; padding: 12px; margin: 14px 0; }
+.dl195 legend { padding: 0 6px; font-weight: 600; }
+.dl195 label { display: block; margin: 8px 0; }
+.dl195 select, .dl195 textarea { width: 100%; max-width: 100%; display: block; margin-top: 5px; background: #172134; color: #edf4ff; border: 1px solid #64748b; border-radius: 7px; padding: 9px; font: inherit; }
+.dl195 textarea { min-height: 80px; resize: vertical; }
+.dl195 input[type=checkbox] { width: auto; margin: 0 7px 0 0; }
+.dl195 button { font: inherit; color: #edf4ff; background: #243651; border: 1px solid #607b9e; padding: 8px 12px; border-radius: 8px; cursor: pointer; white-space: normal; max-width: 100%; }
+.dl195 button:disabled { opacity: .48; cursor: default; }
+.dl195 button[aria-pressed=true] { background: #155e75; border-color: #67e8f9; }
+.dl195 button:focus-visible, .dl195 select:focus-visible, .dl195 textarea:focus-visible { outline: 2px solid #67e8f9; outline-offset: 3px; }
+.dl195-controls, .dl195-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.dl195-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.dl195-model, .dl195-feedback, .dl195-record { background: #152238; border: 1px solid #466084; padding: 12px; border-radius: 10px; }
+.dl195-stats > div { border: 1px solid #3b4f6b; border-radius: 7px; padding: 8px; font-size: .85rem; }
+.dl195-stats strong { display: block; color: #9fe9df; font-size: 1.05rem; }
+.dl195-traffic { height: 20px; display: flex; overflow: hidden; background: #334155; border-radius: 5px; }
+.dl195-traffic span { background: #64748b; transition: flex-grow .35s; }
+.dl195-traffic strong { background: #2dd4bf; transition: flex-grow .35s; }
+.dl195 details { margin-top: 16px; }
+.dl195 summary { cursor: pointer; }
+.dl195-muted { color: #b5c4d9; font-size: .85rem; }
+.dl195-comparison { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
+.dl195-comparison article, .dl195-branches article { border: 1px solid #64748b; border-radius: 9px; background: #172439; padding: 10px; }
+.dl195-comparison article[data-fit=false], .dl195-branches article[data-risk=true] { border-color: #f9a58b; }
+.dl195-blocks { display: grid; gap: 4px; }
+.dl195-blocks span, .dl195-blocks strong { padding: 7px; background: #334155; border-radius: 4px; }
+.dl195-blocks strong { background: #165b63; }
+.dl195-path { display: grid; gap: 8px; text-align: center; margin: 12px 0; }
+.dl195-path > div:not(.dl195-branches) { border: 1px solid #557695; border-radius: 8px; padding: 9px; background: #1b3045; }
+.dl195-branches { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dl195-timeline { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; }
+.dl195-timeline [data-current=true] button { border-color: #5eead4; background: #164e63; }
+@media (max-width: 600px) { .dl195-controls, .dl195-comparison { grid-template-columns: 1fr; } .dl195 fieldset { padding: 9px; } }
+@media (prefers-reduced-motion: reduce) { .dl195-traffic span, .dl195-traffic strong { transition: none; } }
+/* Pair the dark palette with its own surface in both the lesson and help column. */
+.dl195{background:#101c2c;color:#e2ebf6;padding:18px;border:1px solid #405773;border-radius:14px}
+.help-content .dl195 p,.help-content .dl195 li,.help-content .dl195 label{color:#dbe7f5}
+.help-content .dl195 .dl195-muted{color:#b5c4d9}
+@media(max-width:480px){.dl195{padding:12px}.dl195-stats,.dl195-branches{grid-template-columns:1fr}}

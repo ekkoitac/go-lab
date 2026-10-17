@@ -1,0 +1,50 @@
+import {test,expect} from '@playwright/test';
+
+test('151 help compares cancellation, links contexts and gates new predictions',async({page})=>{
+ await page.goto('/#lesson/151');await page.getByRole('button',{name:'动手观察',exact:true}).click();
+ const lab=page.getByTestId('resilience-lab-151');const state=await lab.getByTestId('live-model').getAttribute('data-state');
+ const help=page.getByTestId('resilience-help-151');
+ await page.locator('.help-panel').getByRole('button',{name:'举例子',exact:true}).click();
+ for(let i=0;i<3;i++)await help.getByRole('button',{name:'执行下一事件'}).click();
+ await expect(help.getByTestId('live-model').first()).toContainText('90ms');
+ await expect(help.getByTestId('live-model').last()).toContainText('已取消');
+ await page.locator('.help-panel').getByRole('button',{name:'画图',exact:true}).click();
+ await help.getByRole('button',{name:'子 context',exact:true}).click();
+ await help.getByLabel('连接父 context → 子 context').uncheck();
+ await expect(help.locator('[data-linked-node=child]')).toContainText('1050ms');
+ await expect(help.getByTestId('live-model')).toContainText('90ms');
+ await page.locator('.help-panel').getByRole('button',{name:'拆步骤',exact:true}).click();
+ await help.getByRole('button',{name:'执行下一事件'}).click();
+ await expect(help.getByTestId('live-model')).toContainText('65ms');
+ await page.locator('.help-panel').getByRole('button',{name:'让我试试',exact:true}).click();
+ await expect(help.getByRole('button',{name:'运行并揭晓'})).toBeDisabled();
+ await help.getByLabel('预测首步预算').fill('90');await help.getByLabel('预测取消结果').selectOption('no');
+ await expect(help.getByRole('button',{name:'提交预测与理由'})).toBeDisabled();
+ await help.getByLabel('预测理由').fill('先扣去已用和回包预留，再分两步；取消仍需 I/O 响应。');
+ await help.getByRole('button',{name:'提交预测与理由'}).click();
+ await expect(help.getByTestId('live-model')).toHaveCount(0);
+ await help.getByRole('button',{name:'运行并揭晓'}).click();
+ await expect(help).toContainText('预测吻合');
+ await help.getByRole('button',{name:'换一组输入'}).click();
+ await expect(help.getByTestId('live-model')).toHaveCount(0);
+ await expect(lab.getByTestId('live-model')).toHaveAttribute('data-state',state!);
+});
+
+test('156 help reveals the idle reservation tradeoff without changing the main experiment',async({page})=>{
+ await page.goto('/#lesson/156');await page.getByRole('button',{name:'动手观察',exact:true}).click();
+ const lab=page.getByTestId('resilience-lab-156'),state=await lab.getByTestId('live-model').getAttribute('data-state');
+ const help=page.getByTestId('resilience-help-156');
+ await page.locator('.help-panel').getByRole('button',{name:'画图',exact:true}).click();
+ await expect(help.getByTestId('live-model')).toContainText('订单等待队列');
+ await help.getByRole('button',{name:'把隔离移到连接池'}).click();
+ expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!).active.filter((j:{kind:string})=>j.kind==='order')).toHaveLength(3);
+ await page.locator('.help-panel').getByRole('button',{name:'让我试试',exact:true}).click();
+ await expect(help.getByTestId('live-model')).toHaveCount(0);
+ await help.getByLabel('我的预测').selectOption('1');
+ await expect(help.getByRole('button',{name:'提交预测并运行'})).toBeDisabled();
+ await help.getByLabel('我的理由').fill('总共6个，订单预留5个且不借出，导出只能使用1个。');
+ await help.getByRole('button',{name:'提交预测并运行'}).click();
+ await expect(help).toContainText('预测与本次结果一致');
+ await expect(help.getByTestId('live-model')).toContainText('空闲 5');
+ await expect(lab.getByTestId('live-model')).toHaveAttribute('data-state',state!);
+});

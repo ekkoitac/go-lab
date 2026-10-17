@@ -1,0 +1,38 @@
+import {useState} from 'react';
+import {back, defaults, finish, initial, inspect, repair, step, type Attempts, type Config, type Timeline} from './model';
+import './style.css';
+function Tree({timeline, focus = 0}: {timeline: Timeline; focus?: number}) {
+  const s = inspect(timeline), [gateways, services] = timeline.config.attempts;
+  return <div className="r153-tree" aria-label="嵌套调用树">{Array.from({length: gateways}, (_, g) => <div className={`r153-gateway ${focus === g + 1 ? 'r153-focused' : ''}`} key={g}><strong>网关尝试 {g + 1}</strong>{Array.from({length: services}, (_, v) => <div className="r153-service" key={v}><span>↳ 服务尝试 {v + 1}</span><div className="r153-leaves">{s.tree.filter(l => l.gateway === g + 1 && l.service === v + 1).map(l => {
+    const status = l.ordinal <= s.count ? s.succeeded && l.ordinal === s.count ? 'success' : 'failed' : s.succeeded ? 'skipped' : 'pending';
+    return <span key={l.ordinal} className={`r153-leaf r153-${status}`} aria-current={l.ordinal === s.count ? 'step' : undefined}>C{l.client}<small>DB #{l.ordinal}</small><small>{status === 'success' ? '成功' : status === 'failed' ? '失败' : status === 'skipped' ? '跳过' : '待尝试'}</small></span>;
+  })}</div></div>)}</div>)}</div>;
+}
+function Metrics({timeline}: {timeline: Timeline}) {const s = inspect(timeline); return <div className="r153-metrics"><span>网关已展开<strong>{s.gatewayCalls}</strong></span><span>服务已展开<strong>{s.serviceCalls}</strong></span><span>数据库实际尝试<strong>{s.count}</strong></span><span>持续失败上界<strong>{s.upperBound}</strong></span></div>;}
+function Controls({timeline, set}: {timeline: Timeline; set: (t: Timeline) => void}) {const s = inspect(timeline); return <div className="r153-actions"><button data-resilience-action="step" disabled={s.done} onClick={() => set(step(timeline))}>执行一次底层尝试</button><button data-resilience-action="back" disabled={!s.count} onClick={() => set(back(timeline))}>回退一步</button><button data-resilience-action="reset" onClick={() => set(initial(timeline.config))}>重置本轮</button></div>;}
+export default function Lab() {
+  const [timeline, setTimeline] = useState(() => initial()), [before, setBefore] = useState<Config | null>(null);
+  const s = inspect(timeline), c = timeline.config;
+  function change(patch: Partial<Config>) {setTimeline(initial({...c, ...patch})); setBefore(null);}
+  return <section className="r153" data-testid="resilience-lab-153"><h3>一条用户请求，怎样长成 27 次底层访问？</h3><p>每点一次执行一个数据库尝试。观察客户端用完预算后，服务的下一次尝试如何重新展开客户端。</p><div className="r153-config">{['网关', '服务', '客户端'].map((name, i) => <label key={name}>{name}总尝试次数<select value={c.attempts[i]} onChange={e => {const attempts: Attempts = [...c.attempts]; attempts[i] = Number(e.target.value); change({attempts});}}>{[1, 2, 3, 4].map(n => <option key={n} value={n}>{n} 次（含首次）</option>)}</select></label>)}<label>底层结果<select value={c.successAt} onChange={e => change({successAt: Number(e.target.value)})}><option value={0}>持续失败</option><option value={2}>第 2 次成功</option><option value={5}>第 5 次成功</option></select></label></div><p className="r153-note">改参数会开启新一轮。这里“3 次”是首次 + 2 次重试；完全失败的上界为 {c.attempts.join(' × ')} = {s.upperBound}，成功会提前停止。</p><Controls timeline={timeline} set={setTimeline}/><div data-testid="live-model" data-state={JSON.stringify({...s, tree: undefined, config: c})}><Metrics timeline={timeline}/><Tree timeline={timeline}/></div><p aria-live="polite" className="r153-feedback">{s.note}</p><div className="r153-actions"><button onClick={() => {setBefore(c); setTimeline(initial(repair(c)));}}>修复：只让服务层拥有重试预算</button><button onClick={() => {setBefore(null); setTimeline(initial(defaults));}}>恢复 3 × 3 × 3 基线</button></div>{before && <div className="r153-compare"><p>相同底层条件：{before.successAt ? `第 ${before.successAt} 次才成功` : '持续失败'}。</p><div>修复前上界 <strong>{finish(before).upperBound}</strong> / 最终实际 {finish(before).count} 次 · {finish(before).succeeded ? '成功' : '失败'}</div><div>修复后上界 <strong>{s.upperBound}</strong> / 最终实际 {finish(c).count} 次 · {finish(c).succeeded ? '成功' : '失败'}</div><p>减少放大也会减少本轮恢复机会。若成功门槛在预算外，就应返回失败；不能偷偷让其他层加试。</p></div>}<p className="r153-note">模型边界：顺序嵌套、每次底层失败均可重试、成功逐层返回，无并发、退避时长或 deadline 消耗。现实还需统一截止时间、取消传播、幂等性与恢复配额；退避抖动不改变这个次数上界。本地探索不计正式掌握。</p></section>;
+}
+function Example() {
+  const [successAt, setSuccessAt] = useState(0);
+  const a: Config = {attempts: [3, 3, 3], successAt}, b = repair(a), left = finish(a), right = finish(b);
+  return <><h4>同一个库存故障，两种重试归属</h4><label>控制同一条故障序列<select value={successAt} onChange={e => setSuccessAt(Number(e.target.value))}><option value={0}>数据库持续失败</option><option value={2}>第 2 次请求恢复</option><option value={5}>第 5 次请求恢复</option></select></label><div className="r153-compare"><div>各层都试 3 次<strong>{left.count} 次 DB 访问</strong>{left.succeeded ? '成功' : '失败'} · 上界 27</div><div>只由服务试 3 次<strong>{right.count} 次 DB 访问</strong>{right.succeeded ? '成功' : '失败'} · 上界 3</div></div><p>{successAt === 0 ? '持续故障时，额外的 24 次访问没有创造成功，只增加负载。' : successAt === 2 ? '两边都在第二次成功；27 是上界，并非每次请求固定成本。' : '单层方案用完 3 次预算就失败，不能保证第 5 次恢复时仍成功；重试策略必须权衡容量与恢复机会。'}</p></>;
+}
+function Diagram() {
+  const [focus, setFocus] = useState(1), [client, setClient] = useState(3);
+  const timeline = initial({attempts: [3, 3, client], successAt: 0});
+  return <><h4>把乘法对应到调用树</h4><label>客户端每次最多尝试<select value={client} onChange={e => setClient(Number(e.target.value))}><option value={1}>1 次</option><option value={3}>3 次</option></select></label><div className="r153-actions">{[1, 2, 3].map(g => <button key={g} aria-pressed={g === focus} onClick={() => setFocus(g)}>追踪网关尝试 {g}</button>)}</div><Tree timeline={timeline} focus={focus}/><p className="r153-feedback">高亮子树：网关 #{focus} → 3 个服务尝试 → 每个展开 {client} 个客户端尝试，共 {3 * client} 次 DB 访问。全树 3 × {3 * client} = {9 * client} 次，客户端预算在每个服务调用中重新开始。</p></>;
+}
+function Steps() {
+  const [timeline, setTimeline] = useState(() => initial({attempts: [2, 2, 2], successAt: 0}));
+  return <><h4>沿失败返回的位置继续重试</h4><p>缩小成 2 × 2 × 2。先用完一对客户端尝试，再观察谁发起下一次调用。</p><Controls timeline={timeline} set={setTimeline}/><Metrics timeline={timeline}/><Tree timeline={timeline}/><p aria-live="polite" className="r153-feedback">{inspect(timeline).note}</p></>;
+}
+function Try() {
+  const [recovery, setRecovery] = useState(0), [answer, setAnswer] = useState(''), [reason, setReason] = useState(''), [revealed, setRevealed] = useState(false);
+  const result = finish({attempts: [2, 3, 2], successAt: recovery});
+  return <><h4>迁移练习：代理 2 次、业务 3 次、SDK 2 次</h4><p>以上都包含首次尝试，成功逐层返回。先写底层最终尝试数与推理，再检查。这里只做练习反馈。</p><label>新情境的故障<select value={recovery} onChange={e => {setRecovery(Number(e.target.value)); setAnswer(''); setReason(''); setRevealed(false);}}><option value={0}>始终失败</option><option value={5}>第 5 次底层尝试成功</option></select></label><label>预测最终底层尝试数<input type="number" min={1} max={20} value={answer} onChange={e => {setAnswer(e.target.value); setRevealed(false);}}/></label><label>为什么？说明哪一层会重新展开<textarea value={reason} onChange={e => {setReason(e.target.value); setRevealed(false);}}/></label><button disabled={!answer || !reason.trim()} onClick={() => setRevealed(true)}>记录预测并揭晓</button>{revealed && <div role="status" className="r153-feedback"><p>{Number(answer) === result.count ? '数量预测吻合' : `需要修正：你预测 ${answer} 次`}。实际 {result.count} 次；上界 2 × 3 × 2 = 12。</p><p>{recovery ? '第 5 次成功后逐层返回，后面的 7 个叶子不执行。' : '每个代理尝试都重新展开 3 组 SDK 调用，每组 2 次，因此不能相加成 7。'}</p><p>你的解释：{reason}</p><p>理由供你对照因果链自查，系统没有自动判定文字解释正确；不写入正式掌握记录。</p></div>}</>;
+}
+export function Help({mode}: {mode: string}) {return <section className="r153" data-testid="resilience-help-153">{mode === 'example' ? <Example/> : mode === 'diagram' ? <Diagram/> : mode === 'steps' ? <Steps/> : <Try/>}</section>;}

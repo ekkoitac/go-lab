@@ -1,0 +1,56 @@
+import {test,expect,type Locator} from '@playwright/test';
+async function finish(lab:Locator){for(let i=0;i<60;i++){const next=lab.locator('[data-security-action="step"]');if(await next.isDisabled())return;await next.click();}throw new Error('184 did not terminate');}
+test('184 distinguishes truncation from overflow, rewinds, and resets predictions',async({page})=>{
+  await page.goto('/#lesson/184', {waitUntil:'domcontentloaded'});
+  await page.getByRole('button',{name:'动手观察',exact:true}).click();
+  const lab=page.getByTestId('security-lab-184'),next=lab.locator('[data-security-action="step"]');
+  await expect(next).toBeDisabled();
+  await lab.getByLabel('预测两边最终结果').selectOption('different');
+  await lab.getByLabel('预测理由').fill('第5字节是超额证据，只读4无法区分');
+  await finish(lab);
+  const result=JSON.parse((await lab.getByTestId('live-model').getAttribute('data-state'))!);
+  expect(result.n.result).toBe('accepted');expect(result.n.read).toBe(4);expect(result.p.result).toBe('rejected');expect(result.p.read).toBe(5);
+  await lab.locator('[data-security-action="back"]').click();
+  const previous=JSON.parse((await lab.getByTestId('live-model').getAttribute('data-state'))!);
+  expect(previous.p.read).toBe(4);expect(previous.p.result).toBe('pending');
+  await lab.locator('[data-security-action="reset"]').click();
+  await expect(lab.getByLabel('预测理由')).toHaveValue('');
+  await lab.getByLabel('输入情境').selectOption('exact');
+  await lab.getByLabel('预测理由').fill('下一步是真实EOF，等于上限合法');
+  await finish(lab);
+  const exact=JSON.parse((await lab.getByTestId('live-model').getAttribute('data-state'))!);
+  expect(exact.p.result).toBe('accepted');expect(exact.p.returned).toBe(4);
+});
+test('184 independent decompression budget, meaningful help controls and narrow keyboard operation',async({page})=>{
+  await page.setViewportSize({width:320,height:900});await page.goto('/#lesson/184', {waitUntil:'domcontentloaded'});
+  await page.getByRole('button',{name:'动手观察',exact:true}).click();
+  const lab=page.getByTestId('security-lab-184');
+  await lab.getByLabel('输入情境').selectOption('bomb');
+  await lab.getByLabel('预测理由').fill('上传通过但解压第9字节超额');
+  await finish(lab);
+  const state=JSON.parse((await lab.getByTestId('live-model').getAttribute('data-state'))!);
+  expect(state.p.read).toBe(2);expect(state.p.expanded).toBe(9);
+  const before=await lab.getByTestId('live-model').getAttribute('data-state');
+  await page.locator('.help-panel').getByRole('button',{name:'举例子',exact:true}).click();
+  let help=page.getByTestId('security-help-184');
+  await help.getByLabel('队列包裹数').selectOption('4');
+  await help.getByRole('button',{name:'让两位检查员验收',exact:true}).focus();await page.keyboard.press('Enter');
+  await expect(help).toContainText('完整接受');
+  await page.locator('.help-panel').getByRole('button',{name:'画图',exact:true}).click();
+  help=page.getByTestId('security-help-184');
+  await help.getByLabel('图中解压预算').selectOption('10');
+  let diagram=JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!);
+  expect(diagram.final.result).toBe('accepted');
+  await help.getByLabel('图中归档路径').selectOption('../secret');
+  diagram=JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!);
+  expect(diagram.final.expanded).toBe(0);expect(diagram.final.result).toBe('rejected');
+  await page.locator('.help-panel').getByRole('button',{name:'拆步骤',exact:true}).click();
+  help=page.getByTestId('security-help-184');await help.getByLabel('预测理由').fill('读到真实EOF才结束');await finish(help);
+  await page.locator('.help-panel').getByRole('button',{name:'让我试试',exact:true}).click();
+  help=page.getByTestId('security-help-184');await expect(help.getByRole('button',{name:'验证新情境',exact:true})).toBeDisabled();
+  await help.getByLabel('预测理由').fill('恰好6字节，上限允许相等');await help.getByRole('button',{name:'验证新情境',exact:true}).click();
+  await expect(help).toContainText('判断一致');
+  await expect(lab.getByTestId('live-model')).toHaveAttribute('data-state',before!);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+});
+

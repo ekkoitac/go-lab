@@ -1,0 +1,48 @@
+import {test, expect} from '@playwright/test';
+test('182 predicts before executing, repairs collision and supports undo', async ({page}) => {
+  await page.goto('/#lesson/182', {waitUntil:'domcontentloaded'});
+  await page.getByRole('button', {name:'动手观察', exact:true}).click();
+  const lab = page.getByTestId('security-lab-182');
+  await expect(lab).toBeVisible();
+  const step = lab.getByRole('button', {name:'执行一步并核对'});
+  await expect(step).toBeDisabled();
+  await lab.getByLabel('预测结果', {exact:true}).selectOption('written');
+  await lab.getByLabel('预测理由', {exact:true}).fill('42 当前没有值');
+  await step.click();
+  await expect(lab.getByTestId('live-model')).toContainText('A 的发票');
+  await lab.getByLabel('下一步操作').selectOption('writeB');
+  await lab.getByLabel('预测结果', {exact:true}).selectOption('overwritten');
+  await lab.getByLabel('预测理由', {exact:true}).fill('相同 ID 使用同一个槽');
+  await step.click();
+  await expect(lab.getByTestId('live-model')).toContainText('B 的发票');
+  await lab.getByRole('button', {name:'回退一步'}).click();
+  await expect(lab.getByTestId('live-model')).not.toContainText('B 的发票');
+  await lab.getByRole('button', {name:'统一修复三条路径'}).click();
+  await expect(lab.getByLabel('读取键规则')).toHaveValue('tuple');
+  await page.setViewportSize({width:320,height:800});
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+});
+
+test('182 graph exposes delimiter collision and transfer checks invalidation independently', async ({page}) => {
+ await page.goto('/#lesson/182', {waitUntil:'domcontentloaded'});
+ await page.getByRole('button',{name:'动手观察',exact:true}).click();
+ const model=page.getByTestId('security-lab-182').getByTestId('live-model');
+ const before=await model.getAttribute('data-state');
+ const diagram=page.locator('.help-panel').getByRole('button',{name:'画图',exact:true});
+ await diagram.click();await expect(diagram).toHaveClass(/selected/);
+ const help=page.getByTestId('security-help-182');
+ await help.getByLabel('使用带冒号的边界输入').check();
+ await help.getByLabel('图中的键编码').selectOption('joined');
+ await expect(help.locator('.sec182-slot')).toHaveCount(1);
+ await help.getByLabel('图中的键编码').selectOption('tuple');
+ await expect(help.locator('.sec182-slot')).toHaveCount(2);
+ const trial=page.locator('.help-panel').getByRole('button',{name:'让我试试',exact:true});
+ await trial.click();await expect(trial).toHaveClass(/selected/);
+ await help.getByLabel('迁移预测').selectOption('unsafe');
+ await help.getByLabel('迁移理由').fill('失效使用旧键，复合键的数据还在');
+ await help.getByRole('button',{name:'提交迁移预测'}).click();
+ await expect(help.getByRole('status')).toContainText('预测符合模型');
+ await help.getByRole('button',{name:'换一道情境并清空预测'}).click();
+ await expect(help.getByRole('status')).toHaveCount(0);
+ await expect(model).toHaveAttribute('data-state',before!);
+});

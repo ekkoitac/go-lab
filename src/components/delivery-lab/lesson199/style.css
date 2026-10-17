@@ -1,0 +1,47 @@
+.delivery199 { color: var(--text, #dce8f4); min-width: 0; line-height: 1.65; }
+.delivery199 * { box-sizing: border-box; }
+.delivery199 h3, .delivery199 h4 { margin: 0 0 .6rem; line-height: 1.4; }
+.delivery199 p { margin: .45rem 0 .8rem; overflow-wrap: anywhere; }
+.delivery199 header { margin-bottom: 1rem; }
+.delivery199 .d199-kicker { color: #65d5ca; font-size: .78rem; letter-spacing: .08em; }
+.delivery199 .d199-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; }
+.delivery199 fieldset { border: 1px solid #394b60; border-radius: 12px; padding: .85rem; margin: 0 0 .85rem; min-width: 0; background: #122033; }
+.delivery199 legend { color: #8fd8d1; font-weight: 650; padding: 0 .35rem; max-width: 100%; overflow-wrap: anywhere; }
+.delivery199 label { display: grid; gap: .35rem; margin: .45rem 0 .85rem; min-width: 0; }
+.delivery199 select, .delivery199 textarea { width: 100%; max-width: 100%; min-width: 0; background: #0c1727; color: #e5edf8; border: 1px solid #496076; border-radius: 7px; padding: .55rem; font: inherit; }
+.delivery199 textarea { resize: vertical; }
+.delivery199 input[type=range] { width: 100%; min-width: 0; margin: 0; accent-color: #6bdcc5; }
+.delivery199 .d199-check { display: flex; align-items: flex-start; gap: .55rem; }
+.delivery199 .d199-check input { flex: 0 0 auto; margin: .4rem 0 0; accent-color: #6bdcc5; }
+.delivery199 button { background: #1c3348; color: #e4eef8; border: 1px solid #486277; border-radius: 7px; padding: .55rem .7rem; cursor: pointer; font: inherit; white-space: normal; overflow-wrap: anywhere; min-width: 0; max-width: 100%; }
+.delivery199 button:hover { background: #294961; }
+.delivery199 button:focus-visible, .delivery199 select:focus-visible, .delivery199 textarea:focus-visible { outline: 2px solid #7ce5cc; outline-offset: 3px; }
+.delivery199 button:disabled { opacity: .45; cursor: default; }
+.delivery199 button[aria-pressed=true] { background: #214c4a; border-color: #78d6b5; }
+.delivery199 .d199-actions, .delivery199 .d199-chain { display: flex; flex-wrap: wrap; gap: .55rem; margin: .75rem 0; }
+.delivery199 .d199-chain small { display: block; }
+.delivery199 .d199-note { color: #a8b8ca; font-size: .83rem; }
+.delivery199 .d199-signal, .delivery199 .d199-feedback { border-left: 3px solid #6bdcc5; background: #173239; padding: .75rem; border-radius: 6px; }
+.delivery199 .d199-alert { border-color: #edb56d; background: #3a2d24; }
+.delivery199 .d199-comparison { display: grid; gap: .5rem; }
+.delivery199 .d199-comparison article { border: 1px solid #33495d; border-radius: 7px; padding: .65rem; }
+.delivery199 .d199-comparison article[data-selected=true] { border-color: #78cbbb; background: #183b3d; }
+.delivery199 small { color: #b0c3d5; }
+.delivery199 .d199-record { border: 1px solid #496078; background: #142337; border-radius: 10px; padding: .85rem; margin: .7rem 0; }
+.delivery199 .d199-raw { white-space: pre-wrap; overflow-wrap: anywhere; }
+.delivery199 .d199-map { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .55rem; }
+.delivery199 .d199-map [data-linked=true] { border-color: #68b6af; }
+.delivery199 .d199-edges p { border-left: 2px solid #425263; padding: .5rem; opacity: .55; }
+.delivery199 .d199-edges p[data-active=true] { opacity: 1; border-color: #65d5ca; background: #173239; }
+.delivery199 .d199-edges strong { display: block; font-size: .85rem; }
+.delivery199 .d199-timeline { display: flex; flex-wrap: wrap; gap: .5rem; list-style: none; padding: 0; }
+.delivery199 .d199-timeline li { padding: .4rem .6rem; border: 1px solid #43566c; border-radius: 6px; }
+.delivery199 .d199-timeline [data-current=true] { background: #1c4d48; border-color: #6bdcc5; }
+.delivery199 dl { display: grid; grid-template-columns: 4.5rem minmax(0,1fr); gap: .3rem; }
+.delivery199 dd { margin: 0; overflow-wrap: anywhere; }
+@media(max-width: 650px) { .delivery199 .d199-grid { grid-template-columns: minmax(0, 1fr); gap: 0; } .delivery199 .d199-map { grid-template-columns: repeat(2, minmax(0, 1fr)); } .delivery199 fieldset { padding: .65rem; } }
+@media(prefers-reduced-motion: reduce) { .delivery199 * { scroll-behavior: auto; } }
+.delivery199{background:#101c2c;color:#e2ebf6;padding:18px;border:1px solid #405773;border-radius:14px}
+.help-content .delivery199 p,.help-content .delivery199 li,.help-content .delivery199 label{color:#dce8f4}
+.help-content .delivery199 .d199-note{color:#b8c7d9}
+@media(max-width:480px){.delivery199{padding:12px}}

@@ -1,0 +1,41 @@
+import {test,expect} from '@playwright/test';
+test('181 predicts before execution, blocks cross-tenant delete and supports rewind',async({page})=>{
+  await page.goto('/#lesson/181', {waitUntil:'domcontentloaded'});
+  await page.getByRole('button',{name:'动手观察',exact:true}).click();
+  const lab=page.getByTestId('security-lab-181');
+  await expect(lab).toBeVisible();
+  await expect(lab.getByRole('button',{name:'提交预测并单步',exact:true})).toBeDisabled();
+  await lab.getByLabel('预测首个决定因素').selectOption('tenant');
+  await lab.getByLabel('预测理由').fill('主体 A 不得操作 B 的订单');
+  await lab.getByRole('button',{name:'提交预测并单步',exact:true}).click();
+  for(let i=0;i<3;i++)await lab.getByRole('button',{name:'单步执行',exact:true}).click();
+  const snapshot=JSON.parse((await lab.getByTestId('live-model').getAttribute('data-state'))!);
+  expect(snapshot.weakOrder).toBe('已删除');expect(snapshot.secureOrder).toBe('原始订单');
+  await lab.getByRole('button',{name:'回退一步',exact:true}).click();
+  await expect(lab.getByTestId('live-model')).toHaveAttribute('data-state',/"phase":3/);
+  await lab.getByRole('button',{name:'重置实验',exact:true}).click();
+  await expect(lab.getByLabel('预测理由')).toHaveValue('');
+});
+
+test('181 help matrix and transfer change independently of the observation', async ({page}) => {
+ await page.goto('/#lesson/181', {waitUntil:'domcontentloaded'});
+ await page.getByRole('button',{name:'动手观察',exact:true}).click();
+ const model=page.getByTestId('security-lab-181').getByTestId('live-model');
+ const before=await model.getAttribute('data-state');
+ const diagram=page.locator('.help-panel').getByRole('button',{name:'画图',exact:true});
+ await diagram.click();await expect(diagram).toHaveClass(/selected/);
+ const help=page.getByTestId('security-help-181');
+ await expect(help.getByTestId('live-model')).toHaveAttribute('data-state', /"verdict":"allow"/);
+ await help.getByLabel('主体与订单属于同一租户').uncheck();
+ await expect(help.getByTestId('live-model')).toHaveAttribute('data-state', /"verdict":"tenant"/);
+ const trial=page.locator('.help-panel').getByRole('button',{name:'让我试试',exact:true});
+ await trial.click();await expect(trial).toHaveClass(/selected/);
+ await expect(help.getByRole('button',{name:'验证新情境'})).toBeDisabled();
+ await help.getByLabel('预测首个决定因素').selectOption('permission');
+ await help.getByLabel('预测理由').fill('编辑者的已知权限不包含export');
+ await help.getByRole('button',{name:'验证新情境'}).click();
+ await expect(help.getByRole('status')).toContainText('判断一致');
+ await help.getByRole('button',{name:'换一个情境'}).click();
+ await expect(help.getByRole('status')).toHaveCount(0);
+ await expect(model).toHaveAttribute('data-state',before!);
+});

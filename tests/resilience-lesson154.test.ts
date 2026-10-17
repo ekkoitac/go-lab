@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {simulate,baseline,repaired} from '../src/components/resilience-lab/lesson154/model';
+const end=(c=baseline)=>simulate(c).at(-1)!;
+test('154 long queue hides overload; deadline admission preserves useful throughput',()=>{const a=end(),b=end(repaired);assert.equal(a.arrived,16);assert.equal(a.completed,2);assert.equal(a.late,4);assert.equal(a.wasted,6);assert.equal(b.completed,4);assert.equal(b.rejected,12);assert.equal(b.wasted,0);assert.equal(b.expired,0);});
+test('154 each snapshot preserves request accounting and both resource bounds',()=>{for(const c of [baseline,repaired,{...baseline,queueLimit:0},{...baseline,cancelExpired:true}]){const trace=simulate(c);for(const s of trace){assert.ok(s.active.length<=c.workers);assert.ok(s.queue.length<=c.queueLimit);assert.equal(s.arrived,s.queue.length+s.active.length+s.completed+s.rejected+s.expired+s.late);}assert.deepEqual(trace,simulate(c));}});
+test('154 completion exactly at deadline is valid; too-short budget is rejected',()=>{assert.equal(end({...repaired,arrivals:2,bursts:1,deadline:3}).completed,2);assert.equal(end({...repaired,arrivals:2,bursts:1,deadline:2}).rejected,2);});
+test('154 cancellation releases expired active work and snapshots do not alias',()=>{const c={...baseline,workers:2,arrivals:6,bursts:1,service:2,deadline:3,cancelExpired:true};const trace=simulate(c);assert.equal(trace.at(-1)!.completed,2);assert.equal(trace.at(-1)!.expired,4);assert.equal(trace.at(-1)!.wasted,0);const s=trace.find(x=>x.active.length)!;assert.equal(s.active[0].remaining,2);assert.equal(trace[0].arrived,0);});
+test('154 arrival rate and processing capacity remain distinct',()=>{const fast=end({...baseline,arrivals:1,service:1});const slow=end({...baseline,arrivals:1,service:6});assert.equal(fast.arrived,slow.arrived);assert.ok(fast.completed>slow.completed);assert.ok(slow.peakQueue>fast.peakQueue);});

@@ -1,0 +1,58 @@
+import {test, expect} from '@playwright/test';
+
+test('185 tracks bound data and target options with prediction, rewind and repair', async ({page}) => {
+  await page.goto('/#lesson/185', {waitUntil:'domcontentloaded'});
+  await page.getByRole('button', {name: '动手观察', exact: true}).click();
+  const lab = page.getByTestId('security-lab-185');
+  const step = lab.getByRole('button', {name: '单步执行', exact: true});
+  await expect(step).toBeDisabled();
+  await lab.getByLabel('我的预测').selectOption('data');
+  await lab.getByLabel('预测理由').fill('值绑定通道保留引号，不改变模板');
+  for (let i = 0; i < 3; i++) await step.click();
+  await expect(lab).toContainText('预测与观察一致');
+  await expect(lab.locator('.sec185-lane').nth(1)).toContainText("O'Reilly");
+  await lab.getByRole('button', {name: '回退一步'}).click();
+  await expect(lab.getByTestId('live-model')).toHaveAttribute('data-state', /"phase":2/);
+  await lab.getByLabel('使用上下文').selectOption('shell');
+  await lab.getByLabel('在文件名前增加 cat 支持的 -- 选项边界').uncheck();
+  await expect(step).toBeDisabled();
+  await lab.getByLabel('我的预测').selectOption('structure');
+  await lab.getByLabel('预测理由').fill('cat仍把-n识别为选项');
+  for (let i = 0; i < 3; i++) await step.click();
+  await expect(lab).toContainText('cat 会把以 - 开头的参数当选项候选');
+  await lab.getByRole('button', {name: '重置推演'}).click();
+  await expect(lab.getByLabel('原始输入')).toHaveValue('-n');
+  await expect(lab.getByLabel('预测理由')).toHaveValue('');
+});
+
+test('185 help paths change their own models and fit 320 pixels', async ({page}) => {
+  await page.setViewportSize({width: 320, height: 900});
+  await page.goto('/#lesson/185', {waitUntil:'domcontentloaded'});
+  await page.getByRole('button', {name: '动手观察', exact: true}).click();
+  const lab = page.getByTestId('security-lab-185');
+  const before = await lab.getByTestId('live-model').getAttribute('data-state');
+  await page.getByRole('button', {name: '举例子', exact: true}).click();
+  const help = page.getByTestId('security-help-185');
+  await help.getByRole('button', {name: '正文拼进工单规则'}).click();
+  await expect(help.getByTestId('live-model')).toHaveAttribute('data-state', /"sealed":false/);
+  await page.getByRole('button', {name: '画图', exact: true}).click();
+  await help.getByRole('button', {name: '文件名与程序参数', exact: true}).click();
+  await expect(help).toContainText('cat 选项解析器');
+  await help.getByLabel('加入 --，改变 cat 的解释路径').check();
+  await expect(help).toContainText('cat 文件名通道');
+  await page.getByRole('button', {name: '拆步骤', exact: true}).click();
+  await help.getByLabel('我的预测').selectOption('structure');
+  await help.getByLabel('预测理由').fill('没有shell但还有cat的选项');
+  await help.getByRole('button', {name: '单步执行', exact: true}).focus();
+  await page.keyboard.press('Enter');
+  await expect(help.getByTestId('live-model')).toHaveAttribute('data-state', /"phase":1/);
+  await page.getByRole('button', {name: '让我试试', exact: true}).click();
+  await help.getByLabel('新情境预测').selectOption('structure');
+  await help.getByLabel('新情境理由').fill('参数分离没有结束程序选项解析');
+  await help.getByRole('button', {name: '检验迁移预测'}).click();
+  await expect(help.getByRole('status')).toContainText('预测与观察一致');
+  await help.getByRole('button', {name: '修复：在文件名前加 --'}).click();
+  await expect(help.getByRole('status')).toContainText('输入保持为数据');
+  await expect(lab.getByTestId('live-model')).toHaveAttribute('data-state', before!);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+});

@@ -1,0 +1,24 @@
+/* A scoped surface keeps the per-lesson dark diagrams readable in the light app shell. */
+.observability-surface {
+  --text: #e4edf5;
+  --bg: #142334;
+  --panel: #172638;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #415b70;
+  border-radius: 14px;
+  background: #101e2c;
+  color: var(--text);
+  color-scheme: dark;
+  overflow-wrap: anywhere;
+}
+.observability-surface *, .observability-surface *::before, .observability-surface *::after { box-sizing: border-box; }
+.observability-surface :is(h3,h4,h5,legend,label,p,ol,ul) { color: var(--text); }
+.observability-surface :is(input,select,textarea,button) { max-width: 100%; }
+.observability-surface input::placeholder, .observability-surface textarea::placeholder { color: #a9bbc9; opacity: 1; }
+.observability-surface summary { color: #98d4cf; }
+.observability-surface legend { max-width: 100%; }
+.observability-surface .obs179 { border: 0; padding: 0; background: transparent; }
+@media (max-width: 480px) { .observability-surface { padding: 12px; } }
+@media (prefers-reduced-motion: reduce) { .observability-surface *, .observability-surface *::before, .observability-surface *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
