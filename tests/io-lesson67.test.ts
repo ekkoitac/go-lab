@@ -1,0 +1,10 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {start,read,close,step,finish,result,initialConfig} from '../src/components/io-lab/lesson67/model';
+test('EOF and close are independent responsibilities',()=>{let s=start({...initialConfig,size:2,budget:2});s=read(read(s));assert.equal(s.eof,true);assert.equal(s.closed,false);assert.equal(result(s),'open');assert.equal(result(close(s)),'candidate');});
+test('early close does not invent EOF or consume remaining bytes',()=>{const s=close(start());assert.equal(s.consumed,0);assert.equal(s.eof,false);assert.equal(result(s),'released');assert.equal(read(s),s);assert.equal(step(s),s);});
+test('budget limits consumption and still closes large response',()=>{const s=finish({...initialConfig,size:12,budget:2});assert.equal(s.consumed,2);assert.equal(s.closed,true);assert.equal(s.eof,false);assert.equal(result(s),'released');});
+test('sufficient budget permits candidate, never guarantees reuse',()=>{const c={...initialConfig,size:4,budget:4};assert.equal(result(finish(c)),'candidate');assert.equal(result(finish({...c,keepAlive:false})),'released');});
+test('read-only policy leaks close responsibility even at EOF',()=>{const s=finish({...initialConfig,size:2,budget:4,policy:'read'});assert.equal(s.eof,true);assert.equal(s.closed,false);assert.equal(result(s),'open');});
+test('zero body still needs close; zero byte budget cannot consume nonempty body',()=>{const empty=finish({...initialConfig,size:0,budget:0});assert.equal(empty.eof,true);assert.equal(empty.closed,true);const full=finish({...initialConfig,size:4,budget:0});assert.equal(full.consumed,0);assert.equal(full.eof,false);assert.equal(full.closed,true);});
+test('snapshots stay immutable for rewind and reset',()=>{const first=start();const next=step(first);assert.equal(first.consumed,0);assert.equal(next.consumed,1);assert.deepEqual(start(),first);assert.equal(close(next).consumed,1);});

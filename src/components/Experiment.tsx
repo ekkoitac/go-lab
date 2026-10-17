@@ -5,12 +5,15 @@ import AdvancedLabs from './AdvancedLabs';
 import Scene from './Scene';
 import {sceneChanges} from './scene-changes';
 import ArchitectureMetrics from './ArchitectureMetrics';
-const ChannelChapterLab=lazy(()=>import('./channel-lab/ChannelLab'));
-const SelectLab=lazy(()=>import('./select-lab/SelectLab'));
+const ChannelChapterLab=lazy(()=>import('./channel-lessons/ChannelLessons'));
+const IOChapterLab=lazy(()=>import('./io-lab/IOChapterLab'));
+const SyncLab=lazy(()=>import('./sync-lab/SyncLab'));
 const BoundedLab=lazy(()=>import('./bounded-lab/BoundedLab'));
 export default function Experiment({lesson}:{lesson:Lesson}) {
+ if(lesson.id>=61&&lesson.id<=70)return <Suspense fallback={<p>正在加载本题实验…</p>}><IOChapterLab key={lesson.id} lesson={lesson}/></Suspense>;
+ if(lesson.id>=41&&lesson.id<=50)return <Suspense fallback={<p>正在加载同步实验…</p>}><SyncLab key={lesson.id} lesson={lesson}/></Suspense>;
  if(lesson.id===121)return <Suspense fallback={<p>正在加载并发实验…</p>}><BoundedLab/></Suspense>;
- if(lesson.id===56)return <Suspense fallback={<p>正在加载 select 实验…</p>}><SelectLab/></Suspense>;
+
  if(lesson.id>=51&&lesson.id<=60)return <Suspense fallback={<p>正在加载交互实验…</p>}><ChannelChapterLab key={lesson.id} lesson={lesson}/></Suspense>;
  return <PresetExperiment lesson={lesson}/>;
 }
@@ -46,22 +49,6 @@ function StringLab(){
  <p>{mode==='bytes'?'格子内容是十六进制字节；左上角是字节下标。':'格子内容是码点；左上角是 range 返回的起始字节偏移，不是第几个 rune。'}</p>
  <div className="array-row wrap" data-testid="live-model" data-state={mode+text}>{(mode==='bytes'?Array.from(bytes).map(x=>x.toString(16).padStart(2,'0')):runes).map((v,i)=><div className="cell" key={i} aria-label={`字节偏移 ${mode==='bytes'?i:offsets[i]}：${v}`}><small>{mode==='bytes'?i:offsets[i]}</small><span className="string-value">{v===' '?'␠':v==='\n'?'↵':v==='\t'?'⇥':v}</span></div>)}{!text&&<span>空字符串 · 0 字节 / 0 rune</span>}</div><p aria-live="polite">len(s) = {bytes.length}；rune 数 = {runes.length}。UTF-8 一个 rune 可占多个字节；一个视觉字符也可能由多个 rune 组成。</p></div>;
 }
-function RaceLab(){
- const [value,setValue]=useState(0),[pcs,setPcs]=useState([0,0]),[locals,setLocals]=useState([0,0]),[locked,setLocked]=useState(false),[owner,setOwner]=useState<number|null>(null),[message,setMessage]=useState('请先让两个 goroutine 各读一次。');
- function reset(lock=locked){setValue(0);setPcs([0,0]);setLocals([0,0]);setOwner(null);setMessage(lock?'任一任务开始读之前获得锁，写回后释放。':'请先让两个 goroutine 各读一次。');}
- function step(i:number){
-  if(pcs[i]>=3||(locked&&owner!==null&&owner!==i))return;
-  const next=[...pcs],l=[...locals];
-  if(next[i]===0){l[i]=value;if(locked)setOwner(i);setMessage(`goroutine ${i+1} 读到 ${value}，保存为自己的本地快照。`);}
-  else if(next[i]===1){l[i]++;setMessage(`goroutine ${i+1} 的本地值加到 ${l[i]}；共享值尚未改变。`);}
-  else{setValue(l[i]);if(locked)setOwner(null);setMessage(`goroutine ${i+1} 把 ${l[i]} 写回共享计数器。`);}
-  next[i]++;setLocals(l);setPcs(next);
- }
- const done=pcs.every(p=>p===3);
- return <div className="special-lab"><h4>安排一次读 → 加一 → 写回</h4><p>先分别点击两位任务的第一步，再完成其余步骤，观察丢失更新。打开锁后重做，比较最终值。</p><label><input aria-label="锁住整个读改写" type="checkbox" checked={locked} onChange={e=>{setLocked(e.target.checked);reset(e.target.checked)}}/> 锁住整个读改写（切换后重置）</label>
- <div className="scheduler" data-testid="live-model" data-state={JSON.stringify({value,pcs,locals,locked,owner})}>{[0,1].map(i=><div className="worker" key={i}><h4>goroutine {i+1}{locked&&owner===i?' · 持锁':''}</h4>{['读取共享值','本地 +1','写回共享值'].map((v,j)=><div key={j} className={pcs[i]===j?'instruction active':pcs[i]>j?'instruction done':'instruction'}>{j+1}. {v}</div>)}<p>本地值：{pcs[i]?locals[i]:'尚未读取'}</p><button aria-label={`执行 goroutine ${i+1} 下一步`} disabled={pcs[i]>2||(locked&&owner!==null&&owner!==i)} onClick={()=>step(i)}>{pcs[i]>2?'已完成':locked&&owner!==null&&owner!==i?'等待锁':'执行：'+['读取','加一','写回'][pcs[i]]}</button></div>)}<div className="shared-value"><small>共享计数器 · 两次增量的期望值 2</small><strong>{value}</strong></div></div>
- <button className="ghost" onClick={()=>reset()}>重新安排调度</button><p aria-live="polite">{message} {done?(value===2?'本次保留了两次更新。未加锁时一次结果正确仍不能证明并发安全。':'两次任务都已完成，却只增加了 1：旧快照覆盖造成丢失更新。'):''}</p><p>这是一种调度示意，不是实际 Go 内存模型的完整模拟。</p></div>;
-}
 function PresetExperiment({lesson}:{lesson:Lesson}) {
  const spec=lesson.experiment;
  const [scenario,setScenario]=useState(0),[step,setStep]=useState(0),[playing,setPlaying]=useState(false);
@@ -73,7 +60,7 @@ function PresetExperiment({lesson}:{lesson:Lesson}) {
   const timer=setTimeout(()=>setStep(s=>Math.min(s+1,frames.length-1)),1800);
   return()=>clearTimeout(timer);
  },[playing,step,frames.length]);
- const special=lesson.id===14?<SliceLab/>:lesson.id===24?<NilLab/>:lesson.id===6?<StringLab/>:lesson.id===43?<RaceLab/>:null;
+ const special=lesson.id===14?<SliceLab/>:lesson.id===24?<NilLab/>:lesson.id===6?<StringLab/>:null;
  const hasSpecial=!!special||[61,65,77,78,82].includes(lesson.id);
  function seek(next:number){setPlaying(false);setStep(Math.max(0,Math.min(frames.length-1,next)));}
  return <section className="experiment-panel">

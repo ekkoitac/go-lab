@@ -1,0 +1,7 @@
+.lesson56 .l56-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:0 12px}
+.lesson56 .cl-code span{display:block;min-height:1.65em}
+.lesson56 .cl-code span.active{border-left:3px solid #ead17e;padding-left:7px}
+.lesson56-help .cl-flow button{margin:5px}
+.lesson56-help button[aria-pressed=true]{background:#087f73;color:#fff}
+.lesson56-help select{display:block;margin:8px 0 12px;max-width:100%}
+

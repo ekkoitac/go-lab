@@ -1,0 +1,28 @@
+.sync-diagram{min-width:0;color:#355c4a;line-height:1.75}
+.help-content .sync-diagram h4{font-size:16px;margin:10px 0}
+.help-content .sync-diagram p{font-size:12px;margin:8px 0}
+.sync-diagram-conditions{display:flex;gap:7px;flex-wrap:wrap;margin:13px 0}
+.sync-diagram-conditions button{font-size:11px;line-height:1.65;padding:8px 10px;background:#f1f5ee;color:#49694d;border:1px solid #d2e0ce;text-align:left}
+.sync-diagram-conditions button[aria-pressed=true]{background:#dfeedd;border-color:#7ca079;color:#28512f}
+.sync-diagram-canvas{display:block;width:100%;height:auto;background:#fbfcf9;border:1px solid #dbe7d5;border-radius:10px;overflow:visible}
+.sync-diagram-canvas text{font-family:"Segoe UI","Microsoft YaHei",sans-serif;fill:#345744;font-size:14px}
+.sync-drawing-node{cursor:pointer;outline:none}.sync-drawing-node>rect{fill:#fff;stroke:#8eae96;stroke-width:1.5}
+.sync-drawing-node.active>rect{fill:#f5faf0}.sync-drawing-node.warn>rect{fill:#fff1df;stroke:#c18b57}.sync-drawing-node.muted>rect{fill:#f4f5f1;stroke:#b8c2b1;stroke-dasharray:4 3}
+.sync-drawing-node:focus-visible>rect,.sync-drawing-node.selected>rect{stroke:#1c7454;stroke-width:3}
+.sync-lock-shackle{fill:none;stroke:#728e72;stroke-width:2}
+.sync-drawing-edge>path{stroke:#568875;stroke-width:1.6;fill:none}
+.sync-drawing-edge.waiting>path{stroke:#b66536;stroke-dasharray:6 4}
+.sync-drawing-edge.highlight>path{stroke-width:4}
+.sync-drawing-edge>text{font-size:12px;paint-order:stroke;stroke:#fbfcf9;stroke-width:5;stroke-linejoin:round}
+.sync-drawing-label{font-size:13px!important}.sync-drawing-mark text{font-size:14px;font-weight:600}
+.sync-diagram-legend{color:#6b7e65;font-size:11px!important}
+.sync-diagram-inspect{border-left:3px solid #4c8d65;padding:10px 12px;background:#edf5e8;margin:12px 0;font-size:12px}
+.sync-diagram-inspect ul{margin:4px 0;padding-left:18px}
+.sync-diagram-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:15px}
+.sync-diagram-controls button{font-size:12px;padding:8px 10px}.sync-diagram-controls span{font-size:12px}.sync-diagram-controls button:disabled{opacity:.5}
+.sync-diagram-slider{display:flex;align-items:center;gap:10px;font-size:11px;margin:12px 0}
+.sync-diagram-slider input{flex:1;min-width:0;accent-color:#4a875d}
+.sync-diagram-caption{padding:10px 13px;background:#eef5e9;border:1px solid #d8e4cf;border-radius:8px;font-size:12px}
+.sync-diagram button:focus-visible{outline:3px solid #ad7a30;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.sync-diagram *{animation:none!important;transition:none!important}}
+

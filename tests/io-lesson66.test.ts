@@ -1,0 +1,13 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {baseline,requestState} from '../src/components/io-lab/lesson66/model';
+test('zero Client timeout and no context leave stalled Body waiting',()=>{assert.equal(requestState({client:0,context:0,bodyAt:null,cancelAt:null},100).outcome,'waiting');});
+test('Client total timeout continues after response headers',()=>{assert.equal(requestState(baseline,3).headersReceived,true);assert.equal(requestState(baseline,4).waiting,true);assert.equal(requestState(baseline,5).outcome,'client');assert.equal(requestState(baseline,5).phase,'读取响应体');});
+test('earliest nonzero budget wins and equal budgets retain both causes',()=>{assert.equal(requestState({...baseline,context:4},6).outcome,'context');assert.equal(requestState({...baseline,context:8},6).outcome,'client');assert.equal(requestState({...baseline,context:5},6).outcome,'both');});
+test('read completion before deadline succeeds; equality is explicitly uncertain',()=>{assert.equal(requestState({...baseline,client:10},10).outcome,'complete');assert.equal(requestState({...baseline,bodyAt:5},6).outcome,'race');});
+test('manual cancellation stops local waiting without rolling back a remote commit',()=>{const input={...baseline,cancelAt:3};assert.equal(requestState(input,3).outcome,'cancel');assert.equal(requestState(input,3).remote,'已提交副作用');assert.equal(requestState(input,10).remote,'已提交副作用');});
+test('early cancellation in defined delivery model prevents reception',()=>{assert.equal(requestState({...baseline,cancelAt:0},10).remote,'未接收');});
+test('rewinding recomputes state without mutation',()=>{const before=JSON.stringify(baseline);assert.equal(requestState(baseline,6).outcome,'client');assert.equal(requestState(baseline,2).outcome,'waiting');assert.equal(JSON.stringify(baseline),before);});
+test('negative, fractional and invalid completion times fail at model boundary',()=>{assert.throws(()=>requestState({...baseline,client:-1},2));assert.throws(()=>requestState({...baseline,context:1.5},2));assert.throws(()=>requestState({...baseline,bodyAt:3},2));});
+test('cancelling at the delivery frame cannot erase the already displayed remote receipt',()=>{assert.equal(requestState(baseline,1).remote,'处理中');assert.equal(requestState({...baseline,cancelAt:1},1).remote,'处理中');assert.equal(requestState({...baseline,cancelAt:1},2).remote,'已提交副作用');});
+test('cancellation after headers does not erase receipt of headers',()=>{assert.equal(requestState({...baseline,cancelAt:3},3).headersReceived,true);});

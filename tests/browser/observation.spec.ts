@@ -21,8 +21,8 @@ async function checkGeometry(page:Page){
  }));
 }
 for(let chapter=0;chapter<10;chapter++){
-// Chapter 6 now has constructed state machines, verified in channel-chapter.spec.ts.
-if(chapter===5)continue;
+// Chapters 5–7 use dedicated models, covered by sync, channel and io browser suites.
+if(chapter===4||chapter===5||chapter===6)continue;
 const chapterLessons=lessons.slice(chapter*10,chapter*10+10);
 test(`chapter ${chapter+1}: every frame is readable and controls are reversible`,async({page})=>{
  test.setTimeout(180000);
@@ -102,17 +102,6 @@ test('typed nil and value toggles do not retain an impossible hidden pointer',as
  await expect(lab).toContainText('nil 指针');
  await expect(lab).toContainText('err == nil → false');
 });
-test('interleaving loses an update; holding the lock prevents the second read',async({page})=>{
- const lab=(await open(page,43)).locator('.special-lab');
- const a=lab.getByLabel('执行 goroutine 1 下一步'),b=lab.getByLabel('执行 goroutine 2 下一步');
- await a.click();await b.click();await a.click();await b.click();await a.click();await b.click();
- await expect(lab.locator('.shared-value strong')).toHaveText('1');
- await expect(lab).toContainText('旧快照覆盖');
- await lab.getByLabel('锁住整个读改写').check();
- await a.click();await expect(b).toBeDisabled();await a.click();await a.click();
- await expect(b).toBeEnabled();await b.click();await b.click();await b.click();
- await expect(lab.locator('.shared-value strong')).toHaveText('2');
-});
 test('closing an empty channel wakes the receiver with a visible zero/false result',async({page})=>{
  const lab=await open(page,52);
  await lab.getByRole('button',{name:'接收',exact:true}).click();
@@ -124,13 +113,8 @@ test('closing an empty channel wakes the receiver with a visible zero/false resu
  await lab.getByRole('button',{name:'重置',exact:true}).click();
  await expect(lab.locator('.receive-result')).toContainText('尚无结果');
 });
-test('EOF with zero bytes and failed transaction have truthful feedback',async({page})=>{
- let lab=(await open(page,61)).locator('.special-lab');
- await lab.getByLabel('本次读取字节数').fill('0');
- await lab.getByRole('button',{name:'执行一次Read处理'}).click();
- await expect(lab).toContainText('本次没有有效数据');
- await expect(lab).not.toContainText('遗漏');
- lab=(await open(page,77)).locator('.special-lab');
+test('failed transaction has truthful feedback',async({page})=>{
+ const lab=(await open(page,77)).locator('.special-lab');
  await lab.getByLabel('开始事务并扣款').click();
  await lab.getByLabel('模拟收款失败',{exact:true}).click();
  await expect(lab.getByLabel('已提交余额 10').locator('.cell')).toHaveCount(10);
@@ -139,7 +123,7 @@ test('EOF with zero bytes and failed transaction have truthful feedback',async({
  await expect(lab).toContainText('余额不足');
 });
 test('review screenshots: memory relations, full values, pagination and mobile',async({page})=>{
- for(const id of [5,13,43,82]){
+ for(const id of [5,13,82]){
   const panel=await open(page,id);
   await panel.getByLabel('下一步实验',{exact:true}).click();
   if(id===82){await panel.getByLabel('加入第一页用例').check();await panel.getByLabel('加入非法输入用例').check();}
@@ -177,19 +161,7 @@ test('named steps support keyboard navigation, cancel playback and preserve curr
  await expect(panel.getByLabel('回到开始',{exact:true})).toBeDisabled();
  await expect(panel.locator('.next-operation')).toContainText('执行 copy');
 });
-test('Read completion has an explicit retry and changing settings starts a fresh observation',async({page})=>{
- const lab=(await open(page,61)).locator('.special-lab'),run=lab.getByLabel('执行一次Read处理');
- await run.click();await expect(run).toBeDisabled();
- await expect(run).toHaveText('本次处理完成');
- await lab.getByRole('button',{name:'重新处理本次读取',exact:true}).click();
- await expect(run).toBeEnabled();
- await lab.getByLabel('先消费数据再判断错误').check();await run.click();
- await expect(lab.getByLabel('已保存数据').locator('.cell')).toHaveCount(3);
- await lab.getByLabel('本次读取字节数').fill('0');
- await expect(run).toBeEnabled();
- await lab.getByLabel('同次返回EOF').uncheck();await run.click();
- await expect(lab).toContainText('不代表 EOF');
-});
+// Read data/error ordering and reset are covered by io-lab.spec.ts.
 test('repeated closed-channel receives remain visible and capacity reset clears the receipt count',async({page})=>{
  const lab=await open(page,52);
  await lab.getByRole('button',{name:'协调者关闭通道',exact:true}).click();

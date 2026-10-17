@@ -1,0 +1,10 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {start,transition,run,outcome} from '../src/components/io-lab/lesson70/model';
+test('Stop does not close C or release waiting workers',()=>{const s=run('stop');assert.equal(s.channel,'open');assert.equal(s.active,false);assert.equal(s.range,'waiting');assert.equal(s.select,'waiting');assert.equal(s.rangeCount,1);assert.equal(outcome(s),'both-waiting');});
+test('Stop plus cancellation releases select only',()=>{const s=run('both');assert.equal(s.select,'exited');assert.equal(s.range,'waiting');assert.equal(s.active,false);assert.equal(s.done,true);});
+test('cancel alone does not stop source',()=>{const s=run('cancel');assert.equal(s.active,true);assert.equal(s.select,'exited');assert.equal(outcome(s),'source-running');});
+test('Stop removes an unreceived opportunity under modern semantics',()=>{let s=transition(start(),'tick');s=transition(s,'stop');s=transition(s,'tick');s=transition(s,'step');assert.equal(s.clock,2);assert.equal(s.ready,false);assert.equal(s.rangeCount,0);assert.equal(s.range,'waiting');assert.equal(s.channel,'open');});
+test('cancellation cannot preempt work already received',()=>{let s=transition(transition(start(),'tick'),'step');assert.equal(s.select,'processing');s=transition(transition(s,'stop'),'cancel');assert.equal(s.select,'processing');s=transition(s,'step');assert.equal(s.select,'waiting');assert.equal(s.selectCount,1);s=transition(s,'step');assert.equal(s.select,'exited');});
+test('both simultaneously ready branches are legal, cancel has no priority',()=>{const s=transition(transition(start(),'tick'),'cancel');assert.equal(transition(s,'step','tick').select,'processing');assert.equal(transition(s,'step','done').select,'exited');assert.equal(s.select,'waiting');});
+test('snapshots remain immutable and exited worker stays exited',()=>{const initial=start();const next=transition(initial,'stop');assert.equal(initial.active,true);assert.equal(next.active,false);let s=run('cancel');s=transition(transition(s,'tick'),'step');assert.equal(s.select,'exited');assert.deepEqual(start(),initial);});

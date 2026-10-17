@@ -1,0 +1,33 @@
+.sync-lab,.sync-help,.sync-practice{color:#35594b;font-size:13px;line-height:1.8;min-width:0;overflow-wrap:anywhere}
+.sync-heading small{font-size:11px;color:#557c69}.sync-heading h3{font-size:19px;line-height:1.5;margin:7px 0}.sync-heading p{margin:8px 0 16px}
+.sync-task{background:#edf5ec;border-left:3px solid #6c9d7e;border-radius:6px;padding:12px 15px;margin:14px 0}.sync-task p{margin:4px 0}
+.sync-parameter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0}.sync-parameter input{width:100%;accent-color:#317b5f}
+.sync-note,.sync-boundary{display:block;color:#607966;font-size:12px;line-height:1.8}.sync-boundary{border-top:1px solid #dbe6dc;padding-top:14px;margin-top:20px}
+.sync-lab button,.sync-practice button{font-size:12px;line-height:1.6;white-space:normal;text-align:left}
+.sync-lab button:focus-visible,.sync-practice button:focus-visible,.sync-lab input:focus-visible,.sync-practice input:focus-visible{outline:3px solid #b47a2c;outline-offset:3px}
+.sync-lab button:disabled,.sync-practice button:disabled{opacity:.6;cursor:not-allowed}
+.sync-predict{display:block;margin:16px 0}.sync-lab textarea,.sync-practice textarea{display:block;resize:vertical;width:100%;min-height:74px;padding:10px;border:1px solid #c9dacc;background:#fff;border-radius:7px;font:inherit;line-height:1.7;color:#35594b}
+.sync-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:9px;margin:15px 0}.sync-actions>div{min-width:0}.sync-actions button{width:100%;justify-content:center;padding:11px}.sync-actions small{display:block;font-size:11px;color:#716c58;padding:5px}
+.sync-feedback{background:#edf5f1;border:1px solid #b9d1c2;border-radius:9px;padding:13px 15px;margin:14px 0}.sync-feedback strong{font-size:13px}.sync-feedback p{font-size:13px;margin:7px 0;line-height:1.8}.sync-saved-prediction{border-top:1px solid #c7dacc;padding-top:9px}
+.sync-board{margin:16px 0}.sync-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:10px}
+.sync-lab .sync-metric,.sync-practice .sync-metric{display:flex;flex-direction:column;align-items:flex-start;background:#fbfcf8;color:#385d4c;border:1px solid #d2e0d3;border-radius:9px;padding:12px;min-height:88px;min-width:0;width:100%;font-weight:400}
+.sync-metric span{font-size:11px;color:#5f7868}.sync-metric strong{font-size:17px;line-height:1.7}.sync-metric small{font-size:11px;color:#7a602c}
+.sync-lab .sync-metric.changed,.sync-practice .sync-metric.changed{border-color:#c39347;background:#fff8e9}
+.sync-lab .sync-metric[aria-pressed=true],.sync-practice .sync-metric[aria-pressed=true]{box-shadow:inset 0 0 0 1px #2f7655}
+.sync-inspect{border-left:3px solid #7eab8e;padding:10px;background:#f4f8ef}
+.sync-relations{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,130px),1fr));gap:10px;margin:15px 0}
+.sync-relations>div{display:flex;flex-direction:column;align-items:stretch;text-align:center;border:1px dashed #b7cbbd;border-radius:8px;padding:10px;background:#f8fbf7}
+.sync-relations b{border-radius:6px;padding:8px;background:#eaf2e8;font-size:12px;font-weight:500}.sync-relations span{font-size:11px;line-height:1.6;color:#557768;padding:6px 0}
+.sync-warning{background:#fff0dc;border:1px solid #d3af79;padding:12px;border-radius:7px;color:#7d531e}
+.sync-time{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}.sync-time>div{display:flex;flex-direction:column;min-width:100px;flex:1;padding:10px;background:#e8f2ee;border:1px solid #bbd2c7;border-radius:6px}.sync-time small,.sync-time span{font-size:11px}
+.sync-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:15px 0}.sync-lanes>div{border:1px solid #d3dfd1;padding:9px;border-radius:7px}.sync-lanes span{display:block;font-size:12px;padding:8px;color:#667e70}.sync-lanes .current{background:#e1efdf;border-left:3px solid #739b64;color:#325d36}.sync-lanes .done{color:#416f4b}
+.sync-history,.sync-compare{border-top:1px solid #d9e5d8;margin-top:20px;padding-top:14px}.sync-history h4{font-size:13px}.sync-history input,.sync-practice input[type=range]{width:100%;margin-top:14px;accent-color:#347451}
+.sync-history p{font-size:11px;color:#5b7965}.sync-history ol{padding-left:22px;max-height:240px;overflow:auto}.sync-history li{margin-bottom:6px}.sync-history li small{display:block}.sync-history li button[aria-current=step]{background:#dcebd9}
+.sync-table-wrap{max-width:100%;overflow-x:auto;margin:12px 0}.sync-table-wrap table{border-collapse:collapse;width:100%;table-layout:fixed;font-size:12px}.sync-table-wrap th,.sync-table-wrap td{padding:9px 7px;border:1px solid #d3dfd1;text-align:left;vertical-align:top;overflow-wrap:anywhere}.sync-table-wrap th{background:#edf4e9}.sync-table-wrap caption{text-align:left;font-size:12px;padding-bottom:8px}
+.sync-practice>label{display:block;margin:13px 0}.sync-practice>small{display:block;margin-top:16px;font-size:11px;color:#657963}.sync-options{display:grid;gap:8px}.sync-options button{background:#f4f7ef;color:#355e43;border:1px solid #cadac5;justify-content:flex-start}.sync-options button[aria-pressed=true]{background:#d9edd4;border-color:#5e9459}
+.sync-guide{background:#f4f7ee;padding:12px;border-radius:8px;margin:12px 0}.sync-guide h4{margin:0}.sync-help h4,.sync-practice h4{font-size:14px;margin:10px 0}
+.help-content .sync-lab{padding:13px;margin-top:12px}.help-content .sync-lab .sync-heading h3{font-size:16px}.help-content .sync-lab p,.help-content .sync-practice p{font-size:12px}
+@media(max-width:520px){.sync-lab{padding:14px}.sync-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.sync-relations{grid-template-columns:1fr}.sync-relations>div{display:grid;grid-template-columns:minmax(0,1fr) 70px minmax(0,1fr);align-items:center}.sync-relations span{padding:4px;font-size:10px}.sync-table-wrap th,.sync-table-wrap td{padding:7px 5px}.sync-heading h3{font-size:17px}}
+@media(prefers-reduced-motion:reduce){.sync-lab *,.sync-practice *{animation:none!important;transition:none!important}}
+
+.sync-arrow{display:inline-block;font-style:normal}@media(max-width:520px){.sync-arrow{transform:rotate(-90deg)}}

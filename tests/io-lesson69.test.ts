@@ -1,0 +1,9 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {baseline,timeState,matchingWallTime,challenges} from '../src/components/io-lab/lesson69/model';
+test('same instant with a different zone changes clocks but preserves Equal',()=>{const s=timeState(baseline);assert.equal(s.aDisplay.clock,'00:00');assert.equal(s.bDisplay.clock,'08:00');assert.equal(s.equal,true);assert.equal(s.structEqual,false);assert.equal(s.aInstant,s.bInstant);});
+test('equal offsets never merge distinct location identities',()=>{const s=timeState({a:'east',b:'twin',delta:0});assert.equal(s.aDisplay.clock,s.bDisplay.clock);assert.equal(s.equal,true);assert.equal(s.structEqual,false);assert.equal(timeState({a:'east',b:'east',delta:0}).structEqual,true);});
+test('matching wall clocks can be different instants across a date boundary',()=>{const s=timeState(matchingWallTime(baseline));assert.equal(s.delta,-480);assert.equal(s.aDisplay.clock,s.bDisplay.clock);assert.equal(s.equal,false);assert.equal(s.bInstant-s.aInstant,-480*60000);assert.equal(timeState({a:'utc',b:'west',delta:0}).bDisplay.date,'2025-12-31');});
+test('changing instant within one location invalidates both comparisons',()=>{const s=timeState(challenges[2]);assert.equal(s.equal,false);assert.equal(s.structEqual,false);assert.equal(s.bDisplay.clock,'20:00');});
+test('rewinding preserves input and exact deterministic outcomes',()=>{const before=JSON.stringify(baseline),end=timeState(baseline,3);assert.equal(timeState(baseline,0).step,0);assert.deepEqual(timeState(baseline,3),end);assert.equal(JSON.stringify(baseline),before);});
+test('invalid shifts and phases fail at model boundary',()=>{for(const delta of [781,NaN,0.5])assert.throws(()=>timeState({...baseline,delta}));assert.throws(()=>timeState(baseline,4));});

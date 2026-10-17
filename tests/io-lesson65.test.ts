@@ -1,0 +1,11 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {lane,snapshot,endTick,type Config} from '../src/components/io-lab/lesson65/model';
+const done=(c:Config,extra=true)=>lane(c,endTick(c),extra);
+test('exact N and N+1 are indistinguishable to an N-budget reader',()=>{const a=done({length:4,limit:4,fault:false},false),b=done({length:5,limit:4,fault:false},false);assert.equal(a.bytes,b.bytes);assert.equal(a.eof,'limit');assert.equal(b.eof,'limit');assert.equal(a.verdict,'accept');assert.equal(b.verdict,'accept');assert.equal(b.remaining,1);});
+test('probe accepts exactly N after real source EOF, rejects N+1',()=>{const a=done({length:4,limit:4,fault:false}),b=done({length:5,limit:4,fault:false});assert.equal(a.verdict,'accept');assert.equal(a.eof,'source');assert.equal(b.verdict,'oversize');assert.equal(b.read,5);});
+test('large input remains unread beyond bounded N+1 probe',()=>{const a=done({length:12,limit:4,fault:false});assert.equal(a.read,5);assert.equal(a.remaining,7);assert.equal(a.eof,'limit');assert.equal(a.verdict,'oversize');});
+test('non-EOF error wins even when received bytes exceed N',()=>{const c={length:2,limit:1,fault:true};const a=done(c);assert.equal(a.bytes,'AB');assert.equal(a.error,true);assert.equal(a.verdict,'error');assert.equal(a.eof,'none');assert.equal(lane(c,2,true).error,true);assert.equal(lane(c,2,true).done,false);});
+test('budget may hide a source error beyond N',()=>{const c={length:4,limit:1,fault:true};assert.equal(done(c,false).error,false);assert.equal(done(c,false).eof,'limit');assert.equal(done(c).error,true);});
+test('empty input is accepted only after source EOF and classification',()=>{const c={length:0,limit:4,fault:false};assert.equal(lane(c,0,true).verdict,'pending');assert.equal(lane(c,1,true).eof,'source');assert.equal(done(c).verdict,'accept');});
+test('seeking back restores bytes and has no side effects',()=>{const c={length:8,limit:4,fault:false};const before=snapshot(c,2);assert.equal(snapshot(c,5).probe.read,5);assert.deepEqual(snapshot(c,2),before);assert.equal(snapshot(c,0).probe.read,0);assert.equal(before.probe.verdict,'pending');});
