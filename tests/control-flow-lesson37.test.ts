@@ -1,0 +1,12 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {trace37,next37,readTrace37,type Config37} from '../src/components/control-flow-lab/lesson37/model';
+const base:Config37={success:false,strategy:'check-first',name:'app',error:'missing config'};
+test('failure checked before use returns contextual cause without dereferencing nil',()=>{const t=trace37(base);const last=t.at(-1)!;assert.equal(last.phase,'done');assert.equal(last.value,null);assert.equal(last.outcome,'load: missing config');assert.equal(last.checked,true);});
+test('using nil before error check panics and leaves check unreachable; cause remains present',()=>{const last=trace37({...base,strategy:'use-first'}).at(-1)!;assert.equal(last.phase,'panic');assert.equal(last.checked,false);assert.equal(last.error,'missing config');assert.equal(last.outcome,'panic: nil pointer dereference');});
+test('ignoring err also fails on nil and is not made safe by successful samples',()=>{assert.equal(trace37({...base,strategy:'ignore'}).at(-1)!.phase,'panic');assert.equal(trace37({...base,strategy:'ignore',success:true}).at(-1)!.outcome,'app');});
+test('all strategies can return a valid success result; checked state distinguishes policies',()=>{for(const strategy of ['check-first','use-first','ignore'] as const){const result=trace37({...base,success:true,strategy}).at(-1)!;assert.equal(result.outcome,'app');assert.equal(result.checked,strategy!=='ignore');}});
+test('load snapshots stay stable for rewind and panic cannot continue to later check',()=>{const t=trace37({...base,strategy:'use-first'});assert.equal(t[1].phase,'loaded');assert.equal(t[1].outcome,null);assert.equal(next37(t[2],base),t[2]);});
+test('Reader partial data with EOF must reach consumer before stopping',()=>{const t=readTrace37({bytes:'ABC',error:'EOF',policy:'data-first'});assert.equal(t[0].n,3);assert.equal(t[0].error,'EOF');assert.equal(t[1].consumed,'ABC');assert.equal(t[2].consumed,'ABC');assert.equal(t[2].dropped,'');});
+test('Reader partial data with non-EOF failure is valid too; early error exit loses bytes',()=>{assert.equal(readTrace37({bytes:'AB',error:'read failure',policy:'data-first'}).at(-1)!.consumed,'AB');const lost=readTrace37({bytes:'AB',error:'read failure',policy:'error-first'}).at(-1)!;assert.equal(lost.dropped,'AB');assert.equal(lost.consumed,'');});
+test('zero bytes plus EOF processes no invented data',()=>{const t=readTrace37({bytes:'',error:'EOF',policy:'data-first'});assert.equal(t.at(-1)!.consumed,'');assert.equal(t.at(-1)!.n,0);});

@@ -1,0 +1,47 @@
+import { useState } from 'react';
+import { bound, createState, run, step, type Growth, type Lane, type State } from './model';
+import './style.css';
+
+function LaneView({ lane, selected, onSelect }: { lane: Lane; selected?: number; onSelect?: (index: number) => void }) {
+  return <article className="cf33-lane"><h4>{lane.kind === 'range' ? 'range · 开始时的边界' : '下标队列 · 每轮检查长度'}</h4><code>{lane.kind === 'range' ? 'for _, task := range tasks' : 'for i := 0; i < len(tasks); i++'}</code><p>游标 i = <b>{lane.cursor}</b> · 本轮边界 = <b>{bound(lane)}</b> · 当前 len = {lane.tasks.length}</p><div className="cf33-tasks" aria-label="任务切片">{lane.tasks.map((task, i) => <button type="button" key={task.name} disabled={!onSelect} onClick={() => onSelect?.(i)} aria-pressed={onSelect ? selected === i : undefined} className={`${i === lane.cursor && lane.phase !== 'done' ? 'cf33-current' : ''} ${i >= lane.initialLength ? 'cf33-added' : ''} ${selected === i ? 'cf33-selected' : ''}`}><small>[{i}] {i >= lane.initialLength ? '追加' : '初始'}</small><strong>{task.name}</strong><small>{lane.processed.includes(task.name) ? '已处理' : '待处理'}{i === lane.cursor && lane.phase !== 'done' ? ' ← i' : ''}</small></button>)}</div><p>处理记录：{lane.processed.join(' → ') || '尚无'}<br />{lane.phase === 'done' ? `循环已结束，剩余 ${lane.tasks.length - lane.processed.length} 项未处理。` : `下一动作：${{ check: '检查边界', process: '处理当前任务', append: '尝试追加子任务', advance: '移动游标' }[lane.phase]}`}</p><p className="cf33-note">{lane.note}</p></article>;
+}
+function Pair({ state }: { state: State }) { return <div className="cf33-pair">{state.lanes.map(lane => <LaneView key={lane.kind} lane={lane} />)}</div>; }
+function useTimeline(initial: State) {
+  const [history, setHistory] = useState([initial]);
+  return { state: history[history.length - 1], canBack: history.length > 1, advance: () => setHistory(h => [...h, step(h[h.length - 1])]), back: () => setHistory(h => h.length > 1 ? h.slice(0, -1) : h), reset: (state: State) => setHistory([state]) };
+}
+export default function Lab() {
+  const [names, setNames] = useState(['A']);
+  const [growth, setGrowth] = useState<Growth>('once');
+  const [limit, setLimit] = useState(8);
+  const timeline = useTimeline(createState());
+  const configure = (nextNames = names, nextGrowth = growth, nextLimit = limit) => { setNames(nextNames); setGrowth(nextGrowth); setLimit(nextLimit); timeline.reset(createState(nextNames, nextGrowth, nextLimit)); };
+  return <section className="cf33" data-testid="control-flow-lab-33"><h3>新任务进不进本轮名单？</h3><p>构造同一组初始任务，让两种循环使用相同增长规则。每次只执行一个动作，比较边界、游标与处理记录。</p><fieldset><legend>构造初始任务（修改后从头开始）</legend><div className="cf33-controls"><span>{names.length ? names.join('、') : '空切片'}</span><button disabled={names.length >= 4} onClick={() => configure([...names, String.fromCharCode(65 + names.length)])}>加入初始任务</button><button disabled={!names.length} onClick={() => configure(names.slice(0, -1))}>移除末尾任务</button></div><label>任务增长规则<select value={growth} onChange={e => configure(names, e.target.value as Growth)}><option value="none">所有任务都不追加</option><option value="once">仅初始任务各追加一个子任务</option><option value="repeat">每个任务都追加一个子任务</option></select></label><label>总任务增长上限<select value={limit} onChange={e => configure(names, growth, Number(e.target.value))}>{[4, 6, 8, 12].map(n => <option key={n} value={n}>{n} 项</option>)}</select></label></fieldset><div className="cf33-controls"><button disabled={timeline.state.lanes.every(l => l.phase === 'done')} onClick={timeline.advance}>单步执行</button><button disabled={!timeline.canBack} onClick={timeline.back}>回退一步</button><button onClick={() => timeline.reset(createState(names, growth, limit))}>重置实验</button></div><div data-testid="live-model" data-state={JSON.stringify(timeline.state)}><Pair state={timeline.state} /></div><p className="cf33-live" aria-live="polite">动作 {timeline.state.tick}：{timeline.state.lanes.map(l => `${l.kind === 'range' ? 'range' : '队列'}：${l.note}`).join(' ')}</p><p className="cf33-boundary">模型边界：只观察切片尾部追加，不模拟 map、删改已有元素或底层数组重分配。range 保存遍历所需的切片值与初始长度，<b>不是深复制元素</b>。增长上限是这里显式加入的守卫，不是 Go 自动提供的限制；真实队列还需明确去重、终止或任务预算。</p></section>;
+}
+function Example() {
+  const [dynamic, setDynamic] = useState(false);
+  const [joined, setJoined] = useState(false);
+  return <><h4>类比：点名纸与滚动报名册</h4><p>出发时只有小林、小陈两人。切换点名办法，再让小周报名，观察名单和本轮边界如何对应。</p><div className="cf33-controls"><button aria-pressed={!dynamic} onClick={() => setDynamic(false)}>按出发时的纸点名</button><button aria-pressed={dynamic} onClick={() => setDynamic(true)}>每次看滚动报名册</button><button disabled={joined} onClick={() => setJoined(true)}>追加小周</button><button onClick={() => { setJoined(false); setDynamic(false); }}>重置类比</button></div><div className="cf33-analogy" data-testid="live-model" data-state={`${dynamic}:${joined}`}><div>当前报名册<strong>小林 · 小陈{joined ? ' · 小周' : ''}</strong></div><span aria-hidden="true">↓</span><div>{dynamic ? '每次取当前人数' : '固定出发时人数'}<strong>本轮点名边界：{dynamic && joined ? 3 : 2}</strong></div><p aria-live="polite">{joined ? dynamic ? '新报名者进入本轮点名范围；需要约定何时停止接收。' : '当前报名册已有三人，但本轮纸上仍只安排前两人。' : '尚无新增，两种方法都安排两人。'}</p></div><p>对应关系：人数是 len，点名位置是 i。类比只表达边界；Go 切片 range 不会复印整份元素内容，修改共享底层元素仍可能影响后续读值。</p></>;
+}
+function Diagram() {
+  let state = createState(['A', 'B'], 'once', 8);
+  for (let i = 0; i < 3; i++) state = step(state);
+  const [selected, setSelected] = useState(2);
+  return <><h4>关联探索：点击任务，追踪两个边界</h4><p>A 已处理并追加 A′。点击索引格，观察同一个位置是否落在两种循环的访问范围内。</p><div data-testid="live-model" data-state={`selected:${selected}`}><div className="cf33-pair">{state.lanes.map(lane => <LaneView key={lane.kind} lane={lane} selected={selected} onSelect={setSelected} />)}</div><div className="cf33-links" aria-live="polite"><strong>选中 tasks[{selected}] = {state.lanes[0].tasks[selected].name}</strong><div className={selected < 2 ? 'cf33-in' : 'cf33-out'}>[{selected}] → range 初始区间 [0, 2) → {selected < 2 ? '在本轮边界内' : '本轮不可达'}</div><div className="cf33-in">[{selected}] → 动态队列区间 [0, 3) → 在当前边界内</div></div></div><p>两侧任务格与下方判断同步选中；虚线边框表示开始后追加的格子，不能据此推断底层数组是否换了地址。</p></>;
+}
+function Steps() {
+  const timeline = useTimeline(createState(['X'], 'once', 4));
+  return <><h4>分步推演：X 发现 X′</h4><p>依次检查、处理、追加、移动游标。回退到追加前，再观察 range 边界为什么没有增加。</p><div className="cf33-controls"><button disabled={timeline.state.lanes.every(l => l.phase === 'done')} onClick={timeline.advance}>下一动作</button><button disabled={!timeline.canBack} onClick={timeline.back}>上一步</button><button onClick={() => timeline.reset(createState(['X'], 'once', 4))}>重新推演</button></div><div data-testid="live-model" data-state={JSON.stringify(timeline.state)}><Pair state={timeline.state} /></div><p aria-live="polite">动作 {timeline.state.tick}。{timeline.state.lanes.map(l => l.note).join(' ')}</p></>;
+}
+function Try() {
+  const [count, setCount] = useState(3);
+  const [limit, setLimit] = useState(8);
+  const [answerRange, setAnswerRange] = useState('');
+  const [answerQueue, setAnswerQueue] = useState('');
+  const [reason, setReason] = useState('');
+  const [revealed, setRevealed] = useState(false);
+  const clear = () => { setAnswerRange(''); setAnswerQueue(''); setReason(''); setRevealed(false); };
+  const result = run(createState(Array.from({ length: count }, (_, i) => `报告${i + 1}`), 'once', limit));
+  return <><h4>迁移尝试：批量报告产生复核任务</h4><p>每份初始报告处理后生成一份复核任务；复核不再生成任务。预测两种循环各处理多少项，并解释边界。此处为有帮助的探索，不计入独立掌握成绩。</p><div className="cf33-controls"><label>初始报告<select value={count} onChange={e => { setCount(Number(e.target.value)); clear(); }}><option value={2}>2 份</option><option value={3}>3 份</option></select></label><label>总任务上限<select value={limit} onChange={e => { setLimit(Number(e.target.value)); clear(); }}><option value={4}>4 项</option><option value={8}>8 项</option></select></label></div><fieldset disabled={revealed}><legend>先提交预测与理由</legend><label>range 处理数量<select value={answerRange} onChange={e => setAnswerRange(e.target.value)}><option value="">请选择</option>{[2, 3, 4, 5, 6].map(n => <option key={n}>{n}</option>)}</select></label><label>动态队列处理数量<select value={answerQueue} onChange={e => setAnswerQueue(e.target.value)}><option value="">请选择</option>{[2, 3, 4, 5, 6].map(n => <option key={n}>{n}</option>)}</select></label><label>解释你的依据<textarea rows={3} value={reason} onChange={e => setReason(e.target.value)} placeholder="分别写明初始边界、当前长度与增长上限如何影响终止" /></label></fieldset><div className="cf33-controls"><button disabled={!answerRange || !answerQueue || !reason.trim() || revealed} onClick={() => setRevealed(true)}>验证预测</button><button onClick={clear}>重新预测</button></div><div data-testid="live-model" data-state={`${count}:${limit}:${revealed}`} aria-live="polite">{revealed && <><p><b>{Number(answerRange) === result.lanes[0].processed.length && Number(answerQueue) === result.lanes[1].processed.length ? '数量预测吻合。' : '对照边界，修正预测。'}</b> 你的理由：{reason}</p><p>range 处理 {result.lanes[0].processed.length} 项，边界来自开始时的 {count}；动态队列处理 {result.lanes[1].processed.length} 项，包含在总上限 {limit} 内成功追加的复核任务。{result.lanes[1].rejected > 0 ? `上限拒绝了 ${result.lanes[1].rejected} 次追加。` : '本次没有触发上限。'}下一步：改变增长上限，再预测哪些追加会被拒绝。</p><Pair state={result} /></>}</div></>;
+}
+export function Help({ mode }: { mode: string }) { return <section className="cf33 cf33-help" data-testid="control-flow-help-33">{mode === 'example' ? <Example /> : mode === 'diagram' ? <Diagram /> : mode === 'steps' ? <Steps /> : <Try />}</section>; }

@@ -1,0 +1,58 @@
+import { useState } from 'react';
+import { initialInput, trace, writeAddress, type Address, type Input, type Snapshot, type Strategy } from './model';
+import './style.css';
+const strategies: [Strategy, string][] = [['value', '传结构体值'], ['pointer', '传账户指针'], ['return', '返回新账户'], ['rebind', '传指针后局部重绑定']];
+function View({ state }: { state: Snapshot }) {
+  return <><div className="fl7-objects"><article><small>调用者 · 原账户 A</small><strong>Balance = {state.a}</strong><span>callerP → A</span></article><article className={state.active ? 'fl7-active' : ''}><small>函数局部 · {state.active ? '执行中' : state.local !== null || state.localPointer !== null ? '已返回的历史快照' : '尚未调用'}</small>{state.local !== null ? <><strong>local.Balance = {state.local}</strong><span>独立副本 · 不与 A 连线</span></> : <><strong>p → {state.localPointer ?? '尚未创建'}</strong><span>{state.localPointer ? `复制的地址值 &${state.localPointer}` : '参数还未建立'}</span></>}</article><article><small>另一个账户 B</small><strong>Balance = {state.b}</strong><span>{state.localPointer === 'B' ? '局部 p 指向 B' : '与 A 不同的对象'}</span></article></div>{state.localPointer && <p className="fl7-route">调用者 callerP ─地址 A→ 账户 A<br />函数局部 p ─地址 {state.localPointer}→ 账户 {state.localPointer}{!state.active ? '（调用结束时的绑定）' : ''}</p>}{state.returned !== null && <div className="fl7-return">返回值：Account{'{'}Balance: {state.returned}{'}'}</div>}<div className="fl7-feedback" aria-live="polite"><strong>{state.operation}</strong><code>{state.code}</code><p>{state.cause}</p></div></>;
+}
+function Prediction({ value, reason, disabled, setValue, setReason }: { value: string; reason: string; disabled: boolean; setValue: (value: string) => void; setReason: (value: string) => void }) {
+  return <fieldset disabled={disabled}><legend>执行前先记录你的判断</legend><label>最终原账户 A 的余额<input type="number" min={0} max={600} value={value} onChange={e => setValue(e.target.value)} /></label><label>理由：这次写入会落在哪个对象？<textarea rows={2} value={reason} onChange={e => setReason(e.target.value)} placeholder="说出副本、地址或返回值由谁接收。" /></label></fieldset>;
+}
+const validPrediction = (value: string) => value.trim() !== '' && Number.isInteger(Number(value)) && Number(value) >= 0 && Number(value) <= 600;
+export default function Lab() {
+  const [input, setInput] = useState<Input>(initialInput);
+  const [step, setStep] = useState(0);
+  const [prediction, setPrediction] = useState('');
+  const [reason, setReason] = useState('');
+  const [locked, setLocked] = useState(false);
+  const frames = trace(input);
+  const current = frames[step];
+  const reset = () => { setStep(0); setPrediction(''); setReason(''); setLocked(false); };
+  const change = (patch: Partial<Input>) => { setInput({ ...input, ...patch }); reset(); };
+  return <section className="fl7" data-testid="foundations-lab-7"><header><p className="fl7-eyebrow">值复制 → 写入目标 → 调用者可见结果</p><h3>充值到底改了哪一本账？</h3><p>修改余额和充值金额，选择传参策略，再追踪地址与字段的每一次变化。</p></header><div className="fl7-controls"><label>传参策略<select value={input.strategy} onChange={e => change({ strategy: e.target.value as Strategy })}>{strategies.map(([value, text]) => <option key={value} value={value}>{text}</option>)}</select></label><label>原账户余额<input type="number" min={0} max={500} value={input.balance} onChange={e => { const n = Number(e.target.value); if (Number.isInteger(n) && n >= 0 && n <= 500) change({ balance: n }); }} /></label><label>充值金额<input type="number" min={0} max={100} value={input.amount} onChange={e => { const n = Number(e.target.value); if (Number.isInteger(n) && n >= 0 && n <= 100) change({ amount: n }); }} /></label></div>{input.strategy === 'return' && <label className="fl7-check"><input type="checkbox" checked={input.receive} onChange={e => change({ receive: e.target.checked })} />调用者用 a = deposit(a) 接收返回值</label>}<Prediction value={prediction} reason={reason} disabled={locked} setValue={setPrediction} setReason={setReason} /><div className="fl7-buttons"><button disabled={step === frames.length - 1 || (!locked && (!validPrediction(prediction) || !reason.trim()))} onClick={() => { setLocked(true); setStep(step + 1); }}>单步执行</button><button disabled={step === 0} onClick={() => setStep(step - 1)}>回退一步</button><button onClick={reset}>重新预测</button><button onClick={() => { setInput(initialInput); reset(); }}>重置实验</button></div><div className="fl7-model" data-testid="live-model" data-state={JSON.stringify({ ...input, step, a: current.a, b: current.b, local: current.local, localPointer: current.localPointer, returned: current.returned })}><div className="fl7-stages" aria-label="执行路径">{frames.map((frame, i) => <span key={i} aria-current={step === i ? 'step' : undefined}>{i} · {frame.operation}</span>)}</div><View state={current} /></div>{step === frames.length - 1 && <div className="fl7-feedback"><strong>{Number(prediction) === current.a ? '预测与原账户结果一致。' : `你预测 ${prediction}，原账户实际为 ${current.a}。`}</strong><p>执行前的理由：{reason}</p><p>证据：A={current.a}；{current.local !== null ? `局部副本=${current.local}` : `局部 p 最后指向 ${current.localPointer}`}。可以回退到写入前，检查写入目标，再改变一个条件重试。</p></div>}<p className="fl7-note">模型仅包含 int 字段，使用非 nil 指针和单线程；A/B 是示意身份，未模拟实际地址。结构体中的引用类字段可能共享底层数据；指针也不自动提供并发同步。本区有提示的探索不计正式掌握成绩。</p></section>;
+}
+function Example() {
+  const [delivery, setDelivery] = useState<'value' | 'pointer'>('value');
+  const [amount, setAmount] = useState(20);
+  const [written, setWritten] = useState(false);
+  const frames = trace({ ...initialInput, strategy: delivery, amount });
+  const state = frames[written ? 2 : 1];
+  return <><h4>复印账本还是交出存放地址？</h4><p>扮演记账员：你只能在收到的账本或地址允许的位置记账。</p><label>交给记账员<select value={delivery} onChange={e => { setDelivery(e.target.value as 'value' | 'pointer'); setWritten(false); }}><option value="value">账本复印件（Account 值）</option><option value="pointer">原件的地址（*Account 值）</option></select></label><label>本次记账金额：{amount}<input type="range" min={0} max={100} step={10} value={amount} onChange={e => { setAmount(Number(e.target.value)); setWritten(false); }} /></label><div className="fl7-buttons"><button disabled={written} onClick={() => setWritten(true)}>在收到的位置记账</button><button onClick={() => { setWritten(false); setAmount(20); setDelivery('value'); }}>重置账本</button></div><div className="fl7-model" data-testid="live-model" data-state={JSON.stringify({ delivery, amount, written, a: state.a, copy: state.local })}><div className="fl7-objects"><article><small>原账本 · A</small><strong>{state.a} 元</strong></article><article><small>记账员手里</small><strong>{delivery === 'value' ? `复印件：${state.local} 元` : '地址卡：&A'}</strong><span>{delivery === 'pointer' ? `沿地址看到原账本 ${state.a} 元` : '复印件没有回写路径'}</span></article></div><p aria-live="polite">{written ? state.cause : '尚未写入。收到相同数字不代表收到同一本账。'}</p></div><p className="fl7-note">类比边界：地址卡本身也被复制；改写卡片上的地址和改账本的余额是两种操作。这里只类比结构体的标量字段。</p></>;
+}
+function Diagram() {
+  const [target, setTarget] = useState<Address>('A');
+  const [accounts, setAccounts] = useState({ a: 50, b: 500 });
+  const [message, setMessage] = useState('两个指针值都是 &A，指向同一对象。');
+  return <><h4>地址关系图：先连线，再沿地址写入</h4><p>按钮改变局部 p 的绑定；“写入”按钮才改变账户字段。调用者 callerP 始终指向 A。</p><div className="fl7-buttons"><button aria-pressed={target === 'A'} onClick={() => { setTarget('A'); setMessage('把 callerP 的地址值复制给 p；只改 p，余额不变。'); }}>p = callerP</button><button aria-pressed={target === 'B'} onClick={() => { setTarget('B'); setMessage('p = &other：局部连线改到 B；callerP 的连线仍到 A。'); }}>p = &other</button><button onClick={() => { setAccounts(writeAddress(accounts, target, 10)); setMessage(`沿 p → ${target} 写入 +10；只有账户 ${target} 的余额变化。`); }}>沿 p 写入 +10</button><button onClick={() => { setTarget('A'); setAccounts({ a: 50, b: 500 }); setMessage('已恢复两条地址值都为 &A。'); }}>重置关系图</button></div><div className="fl7-model" data-testid="live-model" data-state={JSON.stringify({ ...accounts, localPointer: target, callerPointer: 'A' })}><div className="fl7-route"><div>callerP ─地址 A→ <strong>账户 A · {accounts.a}</strong></div><div className="fl7-selected">p ─地址 {target}→ <strong>账户 {target} · {target === 'A' ? accounts.a : accounts.b}</strong></div><div>另一对象：账户 B · {accounts.b}</div></div><p aria-live="polite">{message}</p></div><p>试验：先改 p 的连线，再写入。哪一步改变了原账户？你能让 B 增加而 A 不变吗？</p></>;
+}
+function Steps() {
+  const [step, setStep] = useState(0);
+  const [rebind, setRebind] = useState(false);
+  const baseline = trace({ ...initialInput, strategy: 'pointer' });
+  const frames = trace({ ...initialInput, strategy: rebind ? 'rebind' : 'pointer' });
+  return <><h4>从“复制地址”处改写后续路径</h4><p>到达第 1 步后，可以插入 p = &other。开关会回到分叉点，再单步检查写入目标。</p><label className="fl7-check"><input type="checkbox" checked={rebind} disabled={step === 0} onChange={e => { setRebind(e.target.checked); setStep(1); }} />在充值前执行 p = &other</label><div className="fl7-buttons"><button disabled={step === 0} onClick={() => setStep(step - 1)}>上一步</button><button disabled={step === frames.length - 1} onClick={() => setStep(step + 1)}>下一步</button><button onClick={() => { setStep(0); setRebind(false); }}>重置推导</button></div><div className="fl7-model" data-testid="live-model" data-state={JSON.stringify({ step, rebind, a: frames[step].a, b: frames[step].b })}><p>第 {step} / {frames.length - 1} 步</p><View state={frames[step]} /></div>{step === frames.length - 1 && <p className="fl7-feedback">相同输入对照：不重绑定时 A={baseline[baseline.length - 1].a}、B=500；当前 A={frames[step].a}、B={frames[step].b}。改变的是地址目标，传参规则始终按值复制。</p>}</>;
+}
+function Repair() {
+  const [strategy, setStrategy] = useState<Strategy>('return');
+  const [receive, setReceive] = useState(false);
+  const [prediction, setPrediction] = useState('');
+  const [reason, setReason] = useState('');
+  const [checked, setChecked] = useState(false);
+  const frames = trace({ balance: 55, amount: 25, strategy, receive });
+  const final = frames[frames.length - 1];
+  const clear = () => { setPrediction(''); setReason(''); setChecked(false); };
+  return <><h4>修复充值契约：调用后原账户必须是 80</h4><p>输入是 55，充值 25。原方案返回了新账户，却丢弃返回值。选择一个修复，再用结果验证。</p><label>充值实现<select value={strategy} onChange={e => { setStrategy(e.target.value as Strategy); clear(); }}>{strategies.map(([value, text]) => <option key={value} value={value}>{text}</option>)}</select></label>{strategy === 'return' && <label className="fl7-check"><input type="checkbox" checked={receive} onChange={e => { setReceive(e.target.checked); clear(); }} />调用者接收：a = deposit(a)</label>}<Prediction value={prediction} reason={reason} disabled={checked} setValue={setPrediction} setReason={setReason} /><div className="fl7-buttons"><button disabled={checked || !validPrediction(prediction) || !reason.trim()} onClick={() => setChecked(true)}>运行并核对契约</button><button onClick={() => { setStrategy('return'); setReceive(false); clear(); }}>重置修复</button></div><div data-testid="live-model" data-state={JSON.stringify({ strategy, receive, checked, a: checked ? final.a : 55 })}>{checked && <div className="fl7-feedback" aria-live="polite"><strong>{final.a === 80 ? '原账户达到 80，满足契约。' : `原账户为 ${final.a}，尚未达到 80。`}</strong><p>你的预测 {prediction}；{Number(prediction) === final.a ? '与结果一致' : '与结果不同'}。理由：{reason}</p><p>{strategy === 'return' ? receive ? '返回值必须通过调用者赋值进入原账户。再试试指针方案，比较修改发生在哪一侧。' : '新值已返回，但调用者没有接收。接入返回值后再验证。' : strategy === 'pointer' ? '复制地址让函数写入同一账户。对照返回方案，修改发生的位置不同。' : strategy === 'rebind' ? '局部 p 改指向 B，充值落在 B。撤掉重绑定或返回正确的新值。' : '只改了结构体副本。为修改增加明确的输出路径：指针或返回新值并接收。'}</p></div>}</div><p className="fl7-note">这是有提示的修复练习，不记录正式独立掌握。</p></>;
+}
+export function Help({ mode }: { mode: string }) {
+  return <section className="fl7 fl7-help" data-testid="foundations-help-7">{mode === 'example' ? <Example /> : mode === 'diagram' ? <Diagram /> : mode === 'steps' ? <Steps /> : <Repair />}<p className="fl7-note">辅助探索不计入正式掌握成绩。</p></section>;
+}

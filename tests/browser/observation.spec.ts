@@ -21,8 +21,8 @@ async function checkGeometry(page:Page){
  }));
 }
 for(let chapter=0;chapter<10;chapter++){
-// Chapters 5–10 use dedicated models, covered by their own browser suites.
-if(chapter===4||chapter===5||chapter===6||chapter===7||chapter===8||chapter===9)continue;
+// Dedicated chapter models are covered by their own browser suites (31–40: control-flow-lessons).
+if(chapter===0||chapter===1||chapter===2||chapter===3||chapter===4||chapter===5||chapter===6||chapter===7||chapter===8||chapter===9)continue;
 const chapterLessons=lessons.slice(chapter*10,chapter*10+10);
 test(`chapter ${chapter+1}: every frame is readable and controls are reversible`,async({page})=>{
  test.setTimeout(180000);
@@ -65,43 +65,9 @@ test(`chapter ${chapter+1}: phone layout keeps full text inside cards`,async({pa
  }
 });
 }
-test('manual steps pause autoplay; replay, seek and condition switch never skip or overflow',async({page})=>{
- const panel=await open(page,1);await page.clock.install();
- const slider=panel.getByLabel('实验步骤');
- await panel.getByLabel('播放',{exact:true}).click();
- await page.clock.fastForward(1800);await expect(slider).toHaveValue('1');
- await panel.getByLabel('上一步实验',{exact:true}).click();
- await page.clock.fastForward(4000);await expect(slider).toHaveValue('0');
- await panel.getByLabel('播放',{exact:true}).click();
- await panel.locator('.scenario-tabs button').nth(1).click();
- await page.clock.fastForward(4000);await expect(slider).toHaveValue('0');
- await slider.fill('2');await panel.getByLabel('播放',{exact:true}).click();
- await expect(slider).toHaveValue('0');
- await page.clock.fastForward(1800);await expect(slider).toHaveValue('1');
- await page.clock.fastForward(1800);await expect(slider).toHaveValue('2');
- await expect(panel.getByLabel('播放',{exact:true})).toBeVisible();
- await page.clock.fastForward(5000);await expect(slider).toHaveValue('2');
-});
-test('string rune indices are Go byte offsets, including empty and combined text',async({page})=>{
- const panel=await open(page,6),lab=panel.locator('.special-lab');
- await expect(lab.getByRole('button',{name:'字节 · 8',exact:true})).toBeVisible();
- await lab.getByRole('button',{name:'rune · 3',exact:true}).click();
- await expect(lab.locator('.cell small')).toHaveText(['0','1','4']);
- await lab.getByLabel('字符串输入').fill('e\u0301🙂');
- await expect(lab.locator('.cell small')).toHaveText(['0','1','3']);
- await lab.getByLabel('字符串输入').fill('');
- await expect(lab).toContainText('空字符串 · 0 字节 / 0 rune');
-});
-test('typed nil and value toggles do not retain an impossible hidden pointer',async({page})=>{
- const lab=(await open(page,24)).locator('.special-lab');
- await lab.getByLabel('指针指向对象',{exact:true}).check();
- await lab.getByLabel('包含动态类型',{exact:true}).uncheck();
- await expect(lab.getByLabel('指针指向对象',{exact:true})).not.toBeChecked();
- await expect(lab).toContainText('err == nil → true');
- await lab.getByLabel('包含动态类型',{exact:true}).check();
- await expect(lab).toContainText('nil 指针');
- await expect(lab).toContainText('err == nil → false');
-});
+// Foundation lesson interactions moved to foundations-behavior.spec.ts and foundations-lessons.spec.ts.
+// Foundation lesson interactions moved to foundations-behavior.spec.ts and foundations-lessons.spec.ts.
+// Typed nil legal-slot and call-path regression: types-lessons.spec.ts (lesson 24).
 test('closing an empty channel wakes the receiver with a visible zero/false result',async({page})=>{
  const lab=await open(page,52);
  await lab.getByRole('button',{name:'接收',exact:true}).click();
@@ -114,44 +80,11 @@ test('closing an empty channel wakes the receiver with a visible zero/false resu
  await expect(lab.locator('.receive-result')).toContainText('尚无结果');
 });
 // Transaction rollback and uncertain commit feedback: data-boundary-77.spec.ts.
-test('review screenshots: memory relations, full values and mobile',async({page})=>{
- for(const id of [5,13]){
-  const panel=await open(page,id);
-  await panel.getByLabel('下一步实验',{exact:true}).click();
-  await panel.screenshot({path:`.runtime/observation-${id}.png`});
- }
- await page.setViewportSize({width:390,height:844});
- const panel=await open(page,6);
- await panel.screenshot({path:'.runtime/observation-mobile.png'});
-});
+// Foundation lesson interactions moved to foundations-behavior.spec.ts and foundations-lessons.spec.ts.
 
 // User-facing feedback matters even when a valid operation keeps the same value.
-test('unchanged assignment explains why the click did not change a value',async({page})=>{
- const panel=await open(page,9);
- await panel.getByLabel('下一步实验',{exact:true}).click();
- await panel.getByLabel('下一步实验',{exact:true}).click();
- await expect(panel.locator('.scene-changes')).toContainText('本步已执行，展示的值保持不变');
- await expect(panel.locator('.frame-caption')).toContainText('读到的是新的 a');
- await expect(panel.getByLabel('下一步实验',{exact:true})).toHaveText('本条件已完成');
-});
-test('named steps support keyboard navigation, cancel playback and preserve current condition on reselection',async({page})=>{
- const panel=await open(page,16);
- await panel.locator('.scenario-tabs button').nth(1).click();
- await page.clock.install();
- await panel.getByLabel('播放',{exact:true}).click();
- const steps=panel.getByRole('list',{name:'图解步骤'}).getByRole('button');
- await steps.nth(2).focus();await page.keyboard.press('Enter');
- await expect(panel.getByLabel('实验步骤')).toHaveValue('2');
- await expect(panel.locator('.scene-changes')).toContainText('[3 6 9]');
- await expect(panel.locator('.scene-changes')).toContainText('[99 6 9]');
- await page.clock.fastForward(4000);
- await expect(panel.getByLabel('实验步骤')).toHaveValue('2');
- await panel.locator('.scenario-tabs button').nth(1).click();
- await expect(panel.getByLabel('实验步骤')).toHaveValue('2');
- await steps.nth(0).click();
- await expect(panel.getByLabel('回到开始',{exact:true})).toBeDisabled();
- await expect(panel.locator('.next-operation')).toContainText('执行 copy');
-});
+// Foundation lesson interactions moved to foundations-behavior.spec.ts and foundations-lessons.spec.ts.
+// Foundation lesson interactions moved to foundations-behavior.spec.ts and foundations-lessons.spec.ts.
 // Read data/error ordering and reset are covered by io-lab.spec.ts.
 test('repeated closed-channel receives remain visible and capacity reset clears the receipt count',async({page})=>{
  const lab=await open(page,52);

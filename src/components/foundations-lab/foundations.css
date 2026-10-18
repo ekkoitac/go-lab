@@ -1,0 +1,3 @@
+/* Native range controls carry an inline margin in Chromium; width:100% must fit the lesson panel. */
+[data-testid^="foundations-lab-"] input[type="range"],
+[data-testid^="foundations-help-"] input[type="range"] { margin-inline: 0; }

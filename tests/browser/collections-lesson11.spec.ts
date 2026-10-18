@@ -1,0 +1,61 @@
+import { test, expect } from '@playwright/test';
+test('lesson 11 follows array storage through copy, prediction, rewind and pointer contrast', async ({ page }) => {
+  await page.goto('/#lesson/11');
+  await page.getByRole('button', { name: '动手观察', exact: true }).click();
+  const lab = page.getByTestId('collections-lab-11');
+  const model = lab.getByTestId('live-model');
+  await lab.getByRole('button', { name: '单步：进入函数', exact: true }).click();
+  await expect(lab.getByRole('button', { name: '验证预测并写入' })).toBeDisabled();
+  await lab.getByLabel('写入后 a[0] 会是多少？', { exact: true }).fill('8');
+  await lab.getByLabel('依据是什么？', { exact: true }).fill('数组参数复制到独立存储 B');
+  await lab.getByRole('button', { name: '验证预测并写入' }).click();
+  await expect(lab).toContainText('预测吻合');
+  expect(JSON.parse((await model.getAttribute('data-state'))!)).toMatchObject({ original: [8,5,2], local: [7,5,2], localStorage: 'B' });
+  await lab.getByRole('button', { name: '回退一步' }).click();
+  expect(JSON.parse((await model.getAttribute('data-state'))!)).toMatchObject({ original: [8,5,2], local: [8,5,2] });
+  await lab.getByLabel('形参类型').selectOption('pointer');
+  await lab.getByRole('button', { name: '单步：进入函数' }).click();
+  await lab.getByLabel('写入后 a[0] 会是多少？', { exact: true }).fill('7');
+  await lab.getByLabel('依据是什么？', { exact: true }).fill('指针写入 A');
+  await lab.getByRole('button', { name: '验证预测并写入' }).click();
+  expect(JSON.parse((await model.getAttribute('data-state'))!)).toMatchObject({ original: [7,5,2], localStorage: 'A' });
+  await lab.getByRole('button', { name: '单步：函数返回' }).click();
+  expect(JSON.parse((await model.getAttribute('data-state'))!)).toMatchObject({ original: [7,5,2], local: null });
+  await lab.getByRole('button', { name: '重置实验' }).click();
+  expect(JSON.parse((await model.getAttribute('data-state'))!)).toMatchObject({ phase: 0, original: [8,5,2] });
+});
+test('lesson 11 help modes have distinct executable models and conceal transfer feedback', async ({ page }) => {
+  await page.goto('/#lesson/11');
+  await page.getByRole('button', { name: '动手观察', exact: true }).click();
+  const lab = page.getByTestId('collections-lab-11');
+  const unchanged = await lab.getByTestId('live-model').getAttribute('data-state');
+  const help = page.getByTestId('collections-help-11');
+  await page.getByRole('button', { name: '举例子', exact: true }).click();
+  await help.getByRole('button', { name: '重新复印当前原表' }).click();
+  await help.getByRole('button', { name: '复印件减 1' }).click();
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).toMatchObject({ original: [8,5,2], paper: [7,5,2] });
+  await page.getByRole('button', { name: '画图', exact: true }).click();
+  await help.getByRole('button', { name: '执行 *b[0] = 99', exact: true }).click();
+  await expect(help).toContainText('对象 X = 99');
+  await help.getByRole('button', { name: '执行 b[0] = &z', exact: true }).click();
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).toMatchObject({ a: ['X','Y'], b: ['Z','Y'] });
+  await page.getByRole('button', { name: '拆步骤', exact: true }).click();
+  await help.getByRole('button', { name: '执行下一条' }).click();
+  await help.getByRole('button', { name: '执行下一条' }).click();
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).toMatchObject({ a: [4,3], b: [4,9] });
+  await page.getByRole('button', { name: '让我试试', exact: true }).click();
+  await expect(help).not.toContainText('实际 30');
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).not.toHaveProperty('result');
+  await help.getByLabel('slots[2] 的结果', { exact: true }).fill('30');
+  await help.getByLabel('推导理由', { exact: true }).fill('四元素数组形参同样是值复制');
+  await help.getByRole('button', { name: '提交并核对' }).click();
+  await expect(help).toContainText('本次独立提交吻合');
+  await expect(lab.getByTestId('live-model')).toHaveAttribute('data-state', unchanged!);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const width of [390,320]) {
+    await page.setViewportSize({ width, height: 844 });
+    expect(await lab.evaluate(e => e.scrollWidth <= e.clientWidth)).toBeTruthy();
+    expect(await help.evaluate(e => e.scrollWidth <= e.clientWidth)).toBeTruthy();
+  }
+});
+

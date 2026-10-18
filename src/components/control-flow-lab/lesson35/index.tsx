@@ -1,0 +1,50 @@
+import { useState } from 'react';
+import { createState, labels, move, requestExit, run, step, type Operation, type State } from './model';
+import './style.css';
+
+function StateView({ state }: { state: State }) {
+  return <div className="cf35-model"><article><h4>当前函数的 defer 栈</h4><p>栈顶在上 · 后登记先弹出</p><ol className="cf35-stack">{[...state.stack].reverse().map((call, i) => <li key={`${call.iteration}-${call.op}`} className={i === 0 ? 'cf35-top' : ''}><b>{i === 0 ? '栈顶 → ' : ''}{labels[call.op]}</b><small>第 {call.iteration} 轮登记</small></li>)}</ol>{!state.stack.length && <p className="cf35-empty">栈为空</p>}<p>已执行：{state.executed.map(c => `${c.op}#${c.iteration}`).join(' → ') || '尚无'}</p></article><article><h4>资源与结果</h4><div className="cf35-resource"><div>缓冲待写<strong>{state.pending} 条</strong><span>{'▧'.repeat(state.pending) || '空'}</span></div><span aria-hidden="true">→</span><div className={state.open ? 'cf35-open' : 'cf35-closed'}>连接<strong>{state.open ? '打开' : '已关闭'}</strong></div><span aria-hidden="true">→</span><div>已写入<strong>{state.written} 条</strong></div></div><p>汇总错误：{state.errors.length ? state.errors.join('；') : '暂无'}</p><p>Report 快照：{state.reports.length ? state.reports.join(' / ') : '尚未收集'}</p><p>阶段：{({ register: '登记 defer', 'loop-end': '本轮函数体结束', body: '等待当前函数返回', exit: '返回途中执行 defer', done: '函数已返回' })[state.phase]}</p></article></div>;
+}
+function useTimeline(initial: State) {
+  const [history, setHistory] = useState([initial]);
+  return { state: history[history.length - 1], canBack: history.length > 1, advance: () => setHistory(h => [...h, step(h[h.length - 1])]), exit: () => setHistory(h => [...h, requestExit(h[h.length - 1])]), back: () => setHistory(h => h.length > 1 ? h.slice(0, -1) : h), reset: (state: State) => setHistory([state]) };
+}
+function TimelineButtons({ timeline }: { timeline: ReturnType<typeof useTimeline> }) {
+  return <div className="cf35-controls"><button disabled={timeline.state.phase === 'body' || timeline.state.phase === 'done'} onClick={timeline.advance}>{timeline.state.phase === 'exit' ? '弹出下一项 defer' : '单步执行函数体'}</button><button disabled={timeline.state.phase !== 'body'} onClick={timeline.exit}>触发当前函数返回</button><button disabled={!timeline.canBack} onClick={timeline.back}>回退一步</button></div>;
+}
+export default function Lab() {
+  const [order, setOrder] = useState<Operation[]>(['report', 'flush', 'close']);
+  const [pending, setPending] = useState(3);
+  const [failFlush, setFailFlush] = useState(false);
+  const [compare, setCompare] = useState(false);
+  const timeline = useTimeline(createState());
+  const configure = (nextOrder = order, nextPending = pending, nextFail = failFlush) => { setOrder(nextOrder); setPending(nextPending); setFailFlush(nextFail); timeline.reset(createState(nextOrder, nextPending, nextFail)); setCompare(false); };
+  return <section className="cf35" data-testid="control-flow-lab-35"><h3>让 Flush 在 Close 前执行</h3><p>上下移动登记语句，再亲手压栈、触发函数返回和逐项弹出。目标：数据写入后才关闭连接，最后收集清理结果。</p><fieldset><legend>安排登记顺序（调整后重新开始）</legend><ol className="cf35-order">{order.map((op, index) => <li key={op}><code>defer {op}()</code><span className="cf35-controls"><button aria-label={`上移 ${op}`} disabled={index === 0} onClick={() => configure(move(order, index, -1))}>↑ 上移</button><button aria-label={`下移 ${op}`} disabled={index === order.length - 1} onClick={() => configure(move(order, index, 1))}>↓ 下移</button></span></li>)}</ol><div className="cf35-controls"><label>缓冲待写数量<select value={pending} onChange={e => configure(order, Number(e.target.value))}>{[0, 1, 3, 6].map(n => <option key={n} value={n}>{n} 条</option>)}</select></label><label className="cf35-check"><input type="checkbox" checked={failFlush} onChange={e => configure(order, pending, e.target.checked)} />注入 Flush 写入错误</label></div></fieldset><TimelineButtons timeline={timeline} /><div className="cf35-controls"><button onClick={() => timeline.reset(createState(order, pending, failFlush))}>重置实验</button><button onClick={() => configure(['report', 'close', 'flush'])}>按依赖修复登记顺序</button><button onClick={() => setCompare(value => !value)}>{compare ? '收起对照' : '对照两种顺序的最终结果'}</button></div><div data-testid="live-model" data-state={JSON.stringify({ ...timeline.state, compare })}><StateView state={timeline.state} />{compare && <div className="cf35-compare">{([['report', 'flush', 'close'], ['report', 'close', 'flush']] as Operation[][]).map(variant => { const result = run(createState(variant, pending, failFlush)); return <article key={variant.join(',')}><h4>登记：{variant.join(' → ')}</h4><p>实际执行：{result.executed.map(c => c.op).join(' → ')}</p><p>写入 {result.written} · 缓冲 {result.pending} · 错误 {result.errors.length}</p><p>{result.errors.join('；') || '本模型中清理成功'}</p></article>; })}</div>}</div><p className="cf35-feedback" aria-live="polite">{timeline.state.note}</p><p className="cf35-boundary">边界：defer 属于当前函数调用，循环结束不会执行它们。此处模拟一条连接与独立缓冲，Close 不自动 Flush；不同 API 需遵循各自契约。模型显式汇总 Flush 错误，Go 不会自动检查延迟调用返回的错误。正确顺序不能保证写入必定成功。</p></section>;
+}
+function Example() {
+  const [layers, setLayers] = useState<string[]>([]);
+  const [removed, setRemoved] = useState<string[]>([]);
+  const garments = ['内衣', '衬衣', '外套'];
+  const add = () => setLayers([...layers, garments[layers.length]]);
+  return <><h4>类比：穿衣后反向脱衣</h4><p>依次穿上三层衣物，观察最后穿上的外层先被脱掉。登记 defer 就像把清理任务叠到当前函数的栈顶。</p><div className="cf35-controls"><button disabled={layers.length === 3 || removed.length > 0} onClick={add}>穿上下一层</button><button disabled={!layers.length} onClick={() => { setRemoved([...removed, layers[layers.length - 1]]); setLayers(layers.slice(0, -1)); }}>脱掉最外层</button><button onClick={() => { setLayers([]); setRemoved([]); }}>重置类比</button></div><div data-testid="live-model" data-state={JSON.stringify({ layers, removed })}><div className="cf35-clothes">{[...layers].reverse().map((layer, i) => <div key={layer} style={{ paddingInline: `${1 + i * .4}rem` }}>{i === 0 ? '最外层 → ' : ''}{layer}</div>)}{!layers.length && <span>身上无待脱衣层</span>}</div><p aria-live="polite">脱衣记录：{removed.join(' → ') || '尚未脱衣'}</p></div><p>类比只解释逆序。defer 栈属于每次函数调用，不是整个 goroutine 的共同衣柜；清理函数还可能失败，不能从穿脱动作推断错误处理。</p></>;
+}
+function Diagram() {
+  const [selected, setSelected] = useState<Operation>('flush');
+  const order: Operation[] = ['report', 'close', 'flush'];
+  const index = order.indexOf(selected);
+  return <><h4>关联图：一行登记对应哪一层栈？</h4><p>点选代码行或栈项，追踪登记位置、弹出次序与所依赖的资源。这里展示全部登记后、尚未返回的同一时刻。</p><div className="cf35-diagram" data-testid="live-model" data-state={selected}><div><h4>代码从上往下执行</h4>{order.map((op, i) => <button key={op} aria-pressed={selected === op} onClick={() => setSelected(op)}>第 {i + 1} 行：defer {op}()</button>)}</div><span className="cf35-link-arrow" aria-hidden="true">→</span><div><h4>栈从上往下弹出</h4>{[...order].reverse().map((op, i) => <button key={op} aria-pressed={selected === op} onClick={() => setSelected(op)}>{i === 0 ? '栈顶' : `第 ${i + 1} 个执行`}：{labels[op]}</button>)}</div></div><div className="cf35-dependency" aria-live="polite"><b>登记第 {index + 1} 项 → 执行第 {3 - index} 项</b><p>{selected === 'flush' ? 'Flush → 需要打开的连接 → 成功后缓冲归零。它必须在 Close 之前执行。' : selected === 'close' ? 'Close → 关闭连接 → 后续 Flush 无法写入。因此 Close 要先登记、后执行。' : 'Report → 读取已写入数量与错误集合 → 应在 Flush 和 Close 后执行，所以最先登记。'}</p></div></>;
+}
+function Steps() {
+  const timeline = useTimeline(createState(['report'], 0, false, 3));
+  return <><h4>分步观察：循环三轮，为什么还没清理？</h4><p>同一函数的循环每轮登记一个 Report。单步跨过轮次边界，观察栈累积；循环结束后，显式返回才触发逆序执行。</p><code>{'for i := 1; i <= 3; i++ {\n    defer report(i)\n}\n// 此时仍未执行 defer\nreturn'}</code><TimelineButtons timeline={timeline} /><button onClick={() => timeline.reset(createState(['report'], 0, false, 3))}>重新推演循环</button><div data-testid="live-model" data-state={JSON.stringify(timeline.state)}><StateView state={timeline.state} /></div><p aria-live="polite" className="cf35-feedback">{timeline.state.note}</p><p>report(i) 的轮次在登记时求值；执行顺序会显示为 report#3、report#2、report#1。此处使用独立传参，避免混淆闭包捕获。</p></>;
+}
+function Try() {
+  const [first, setFirst] = useState<'outer' | 'inner'>('outer');
+  const [answer, setAnswer] = useState('');
+  const [reason, setReason] = useState('');
+  const [revealed, setRevealed] = useState(false);
+  const clear = () => { setAnswer(''); setReason(''); setRevealed(false); };
+  const execution = first === 'outer' ? ['内层租约', '外层租约'] : ['外层租约', '内层租约'];
+  return <><h4>新情境：嵌套资源租约</h4><p>约定：释放内层租约时，外层租约必须仍然有效。两个租约都已取得，函数中登记了两项释放操作。先预测第一个释放谁，再解释是否满足依赖。</p><label>登记顺序<select value={first} onChange={e => { setFirst(e.target.value as typeof first); clear(); }}><option value="outer">defer 释放外层 → defer 释放内层</option><option value="inner">defer 释放内层 → defer 释放外层</option></select></label><fieldset disabled={revealed}><legend>先预测与说明理由</legend><label>最先释放<select value={answer} onChange={e => setAnswer(e.target.value)}><option value="">请选择</option><option value="inner">内层租约</option><option value="outer">外层租约</option></select></label><label>为什么？这能满足依赖吗？<textarea rows={3} value={reason} onChange={e => setReason(e.target.value)} /></label></fieldset><div className="cf35-controls"><button disabled={!answer || !reason.trim() || revealed} onClick={() => setRevealed(true)}>验证释放顺序</button><button onClick={clear}>重新预测</button></div><div data-testid="live-model" data-state={`${first}:${revealed}`} aria-live="polite">{revealed && <div className="cf35-feedback"><b>{answer !== first ? '顺序预测吻合。' : '请按后登记先执行重新推导。'}</b><p>你的理由：{reason}</p><div className="cf35-resource"><span>{execution[0]}：先释放</span><span aria-hidden="true">→</span><span>{execution[1]}：后释放</span></div><p>{first === 'outer' ? '内层先释放，此时外层仍有效，满足依赖。' : '外层先失效，随后释放内层时依赖已经失效。修复：先登记释放外层，再登记释放内层。'}</p></div>}</div><p>这是有帮助的迁移练习，不计入独立掌握成绩；租约依赖是本情境明确给出的契约，不表示所有锁或资源都采用相同释放规则。</p></>;
+}
+export function Help({ mode }: { mode: string }) { return <section className="cf35 cf35-help" data-testid="control-flow-help-35">{mode === 'example' ? <Example /> : mode === 'diagram' ? <Diagram /> : mode === 'steps' ? <Steps /> : <Try />}</section>; }

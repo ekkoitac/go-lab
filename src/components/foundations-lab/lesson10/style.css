@@ -1,0 +1,27 @@
+.fl10 { --fl10-accent: #198b72; display: grid; gap: 16px; min-width: 0; }
+.fl10 h3,.fl10 h4,.fl10 p { margin: 0; }
+.fl10 header { display: grid; gap: 8px; }
+.fl10 .fl10-eyebrow { color: var(--fl10-accent); font-size: 12px; font-weight: 700; }
+.fl10-controls,.fl10-route { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.fl10 label { display: grid; gap: 7px; min-width: 0; }
+.fl10 select,.fl10 textarea,.fl10 input { width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; font: inherit; padding: 9px; border: 1px solid #9caeaa; border-radius: 8px; background: var(--surface, #fff); color: var(--text, #243835); }
+.fl10 input[type=range] { margin-inline: 0; }
+.fl10 fieldset { display: grid; gap: 12px; min-width: 0; border: 1px solid #a7bfba; border-radius: 10px; padding: 12px; }
+.fl10 legend { padding: 0 6px; font-weight: 600; }
+.fl10 pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #17352e; color: #e8fbf4; padding: 14px; border-radius: 9px; margin: 0; }
+.fl10 code { overflow-wrap: anywhere; }
+.fl10-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.fl10 button { padding: 9px 12px; min-height: 40px; border: 1px solid #95b6aa; border-radius: 8px; background: #e6f3ee; color: #124b3e; font: inherit; cursor: pointer; white-space: normal; }
+.fl10 button:disabled { opacity: .5; cursor: not-allowed; }
+.fl10 button[aria-pressed=true] { background: #196a56; color: white; }
+.fl10 :is(button,select,textarea,input):focus-visible { outline: 3px solid #00816a; outline-offset: 3px; }
+.fl10-model { display: grid; gap: 12px; padding: 14px; border: 1px solid #a9c5ba; border-radius: 12px; min-width: 0; }
+.fl10-route { grid-template-columns: 1.3fr .8fr 1.3fr; }
+.fl10-route > div { display: grid; gap: 8px; align-content: start; padding: 12px; background: #eff5f2; border: 2px solid transparent; border-radius: 10px; color: #243e34; min-width: 0; overflow-wrap: anywhere; }
+.fl10-route .fl10-active { border-color: #198b72; background: #d6f4e7; }
+.fl10-route .fl10-skipped { border-style: dashed; border-color: #9baea5; background: #f1f1f1; color: #5a6863; }
+.fl10-metrics { display: flex; flex-wrap: wrap; gap: 12px; }
+.fl10-feedback { display: grid; gap: 8px; padding: 13px; border-left: 3px solid #198b72; background: #edf6f0; color: #203e30; overflow-wrap: anywhere; }
+.fl10-note { color: var(--muted, #5d6e67); font-size: 13px; line-height: 1.7; }
+@media(max-width: 600px) { .fl10-controls,.fl10-route { grid-template-columns: minmax(0,1fr); } .fl10-model { padding: 10px; } .fl10 button { max-width: 100%; } }
+@media(prefers-reduced-motion: reduce) { .fl10 *, .fl10 *::before,.fl10 *::after { animation: none !important; transition: none !important; } }

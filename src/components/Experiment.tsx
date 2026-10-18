@@ -5,6 +5,10 @@ import AdvancedLabs from './AdvancedLabs';
 import Scene from './Scene';
 import {sceneChanges} from './scene-changes';
 import ArchitectureMetrics from './ArchitectureMetrics';
+const TypesChapterLab=lazy(()=>import('./types-lab/TypesChapterLab'));
+const ControlFlowChapterLab=lazy(()=>import('./control-flow-lab/ControlFlowChapterLab'));
+const FoundationsChapterLab=lazy(()=>import('./foundations-lab/FoundationsChapterLab'));
+const CollectionsChapterLab=lazy(()=>import('./collections-lab/CollectionsChapterLab'));
 const DeliveryChapterLab=lazy(()=>import('./delivery-lab/DeliveryChapterLab'));
 const OperationsChapterLab=lazy(()=>import('./operations-lab/OperationsChapterLab'));
 const ResilienceChapterLab=lazy(()=>import('./resilience-lab/ResilienceChapterLab'));
@@ -21,6 +25,10 @@ const DataBoundaryChapter=lazy(()=>import('./data-boundary-lab/DataBoundaryChapt
 const ObservabilityChapterLab=lazy(()=>import('./observability-lab/ObservabilityChapterLab'));
 const SecurityChapterLab=lazy(()=>import('./security-lab/SecurityChapterLab'));
 export default function Experiment({lesson}:{lesson:Lesson}) {
+ if(lesson.id>=21&&lesson.id<=30)return <Suspense fallback={<p>正在加载类型与接口实验…</p>}><TypesChapterLab key={lesson.id} lesson={lesson}/></Suspense>;
+ if(lesson.id>=31&&lesson.id<=40)return <Suspense fallback={<p>正在加载控制流实验…</p>}><ControlFlowChapterLab key={lesson.id} lesson={lesson}/></Suspense>;
+ if(lesson.id>=1&&lesson.id<=10)return <Suspense fallback={<p>正在加载基础概念实验…</p>}><FoundationsChapterLab key={lesson.id} lesson={lesson}/></Suspense>;
+ if(lesson.id>=11&&lesson.id<=20)return <Suspense fallback={<p>正在加载数组、切片与 map 实验…</p>}><CollectionsChapterLab key={lesson.id} lesson={lesson}/></Suspense>;
  if(lesson.id>=191&&lesson.id<=200)return <Suspense fallback={<p>正在加载测试与演进实验…</p>}><DeliveryChapterLab key={lesson.id} lesson={lesson}/></Suspense>;
  if(lesson.id>=161&&lesson.id<=170)return <Suspense fallback={<p>正在加载性能与资源实验…</p>}><OperationsChapterLab key={lesson.id} lesson={lesson}/></Suspense>;
  if(lesson.id>=151&&lesson.id<=160)return <Suspense fallback={<p>正在加载韧性实验…</p>}><ResilienceChapterLab key={lesson.id} lesson={lesson}/></Suspense>;
@@ -38,30 +46,6 @@ export default function Experiment({lesson}:{lesson:Lesson}) {
 
  if(lesson.id>=51&&lesson.id<=60)return <Suspense fallback={<p>正在加载交互实验…</p>}><ChannelChapterLab key={lesson.id} lesson={lesson}/></Suspense>;
  return <PresetExperiment lesson={lesson}/>;
-}
-function SliceLab(){
- const [capacity,setCapacity]=useState(2),[step,setStep]=useState(0);
- const shared=capacity>2,a=step===2&&shared?[99,20]:[10,20],b=step===0?[]:step===1?[10,20,30]:[99,20,30];
- return <div className="special-lab">
-  <h4>append 后，b 是否还与 a 共享数组？</h4>
-  <p>先用容量 2 完成两步，再改成 3 或 4 重做；比较修改 b[0] 后 a[0] 是否变化。改变容量会从头开始。</p>
-  <label>初始容量 <strong>{capacity}</strong><input aria-label="切片容量" type="range" min="2" max="4" value={capacity} onChange={e=>{setCapacity(+e.target.value);setStep(0)}}/></label>
-  <div className="slice-model" data-testid="live-model" data-state={capacity+':'+step}>
-   <span className="pointer">a → 数组 A · len 2 / cap {capacity}</span>
-   <div className="array-row">{Array.from({length:capacity},(_,i)=><div className={'cell '+(i>=2&&!(step>0&&shared&&i===2)?'unused':'')} key={i}><small>{i}</small>{a[i]??(step>0&&shared&&i===2?30:0)}</div>)}</div>
-   <div className={'pointer '+(step>0&&!shared?'split':'')}>{step===0?'b 尚未创建':`b → ${shared?'数组 A':'新数组 B'} · len 3 / cap ${shared?capacity:'≥ 3'}`}</div>
-   {step>0&&!shared&&<div className="array-row">{b.map((v,i)=><div className="cell fresh" key={i}><small>{i}</small>{v}</div>)}</div>}
-   <p>切片可见元素：a = [{a.join(' ')}]；b = {step===0?'尚未创建':'['+b.join(' ')+']'}</p>
-  </div>
-  <div className="control-row"><button onClick={()=>setStep(Math.min(2,step+1))} disabled={step===2}>{step===0?'执行 b := append(a, 30)':step===1?'执行 b[0] = 99':'两步已完成'}</button><button className="ghost" disabled={step===0} onClick={()=>setStep(step-1)}>撤回一步</button><button className="ghost" onClick={()=>setStep(0)}>重置</button></div>
-  <p aria-live="polite">{step===0?'a 的长度固定为 2；虚线格在长度以外，但属于底层数组容量。':step===1?(shared?'append 复用数组 A，第三格变为 30；a 的长度仍为 2。':'append 分配数组 B 并复制元素，a 仍指向数组 A。'):(shared?'b[0] 与 a[0] 是同一个位置，两者都变为 99。':'b[0] 变为 99；a[0] 仍为 10，因为它们位于不同数组。')} 扩容后的精确容量由实现决定。</p>
- </div>;
-}
-function NilLab(){
- const [typed,setTyped]=useState(true),[value,setValue]=useState(false);
- return <div className="special-lab"><h4>接口的类型和值，缺一不可</h4><p>先保留类型、保持空指针，观察 false；再取消动态类型，观察接口何时等于 nil。</p><div className="control-row"><label><input aria-label="包含动态类型" type="checkbox" checked={typed} onChange={e=>{setTyped(e.target.checked);setValue(false)}}/> 包含动态类型 *Problem</label><label><input aria-label="指针指向对象" type="checkbox" checked={value} disabled={!typed} onChange={e=>setValue(e.target.checked)}/> 指针指向对象</label></div>
- <div className="interface-model" data-testid="live-model" data-state={JSON.stringify({typed,value})}><div><small>动态类型</small><strong>{typed?'*Problem':'无'}</strong></div><div><small>动态值</small><strong>{!typed?'无':value?'指向对象':'nil 指针'}</strong></div>{typed&&value&&<span className="heap-object">Problem 对象</span>}</div>
- <p className={typed?'result amber':'result'} aria-live="polite">err == nil → <strong>{String(!typed)}</strong></p><p>当前赋值：<code>{!typed?'err = nil':value?'err = &Problem{}':'err = (*Problem)(nil)'}</code>。只有动态类型和动态值都为空，接口才等于 nil。</p></div>;
 }
 function StringLab(){
  const [text,setText]=useState('A中🙂'),[mode,setMode]=useState<'bytes'|'runes'>('bytes');
@@ -82,7 +66,7 @@ function PresetExperiment({lesson}:{lesson:Lesson}) {
   const timer=setTimeout(()=>setStep(s=>Math.min(s+1,frames.length-1)),1800);
   return()=>clearTimeout(timer);
  },[playing,step,frames.length]);
- const special=lesson.id===14?<SliceLab/>:lesson.id===24?<NilLab/>:lesson.id===6?<StringLab/>:null;
+ const special=lesson.id===6?<StringLab/>:null;
  const hasSpecial=!!special||[61,65,77,78,82].includes(lesson.id);
  function seek(next:number){setPlaying(false);setStep(Math.max(0,Math.min(frames.length-1,next)));}
  return <section className="experiment-panel">

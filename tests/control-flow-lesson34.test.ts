@@ -1,0 +1,10 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {trace34,next34,type Config34} from '../src/components/control-flow-lab/lesson34/model';
+const c:Config34={initial:2,final:8,strategy:'direct'};
+test('direct defer evaluates argument at registration but calls only on exit',()=>{const t=trace34(c);assert.equal(t[1].saved,2);assert.equal(t[1].output,null);assert.equal(t[2].n,8);assert.equal(t[2].saved,2);assert.equal(t[3].output,null);assert.equal(t[4].output,2);});
+test('parameterized closure freezes argument just like a direct call',()=>{const t=trace34({...c,strategy:'parameter'});assert.equal(t[1].capture,'value');assert.equal(t[2].saved,2);assert.equal(t[4].output,2);});
+test('parameterless closure reads current local variable during execution',()=>{const t=trace34({...c,strategy:'closure'});assert.equal(t[1].capture,'variable');assert.equal(t[1].saved,null);assert.equal(t[1].output,null);assert.equal(t[2].n,8);assert.equal(t[4].output,8);});
+test('negative and zero values are preserved; null uniquely means no output',()=>{assert.equal(trace34({...c,initial:0,final:-4})[4].output,0);assert.equal(trace34({...c,initial:0,final:-4,strategy:'closure'})[4].output,-4);});
+test('rewind snapshots remain unchanged and completed state cannot call twice',()=>{const t=trace34(c);assert.equal(t[1].n,2);assert.equal(t[1].phase,'registered');assert.equal(t[3].output,null);assert.equal(next34(t[4],c),t[4]);});
+test('same input values may hide output difference but do not erase capture semantics',()=>{const value=trace34({...c,initial:8})[4];const reference=trace34({...c,initial:8,strategy:'closure'})[4];assert.equal(value.output,reference.output);assert.equal(value.capture,'value');assert.equal(reference.capture,'variable');});

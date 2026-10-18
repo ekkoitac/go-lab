@@ -1,0 +1,66 @@
+import { test, expect } from '@playwright/test';
+test('lesson 17 build and remove aliases, predict retention, copy, rewind and reset', async ({page}) => {
+  await page.goto('/#lesson/17');
+  await page.getByRole('button',{name:'动手观察',exact:true}).click();
+  const lab = page.getByTestId('collections-lab-17');
+  const model = lab.getByTestId('live-model');
+  await expect(lab.getByRole('button',{name:'执行所选操作'})).toBeDisabled();
+  const act = async(action:string, answer:string) => {
+    await lab.getByLabel('下一步操作',{exact:true}).selectOption(action);
+    await lab.getByLabel('操作后 A 是否仍可达？',{exact:true}).selectOption(answer);
+    await lab.getByLabel('哪条引用支持你的判断？',{exact:true}).fill('跟踪所有活引用，不通过 cap 判断数组分配大小');
+    await lab.getByRole('button',{name:'执行所选操作'}).click();
+  };
+  await act('cap','no');
+  await expect(lab).toContainText('预测需要修正');
+  expect(JSON.parse((await model.getAttribute('data-state'))!)).toMatchObject({capacity:2,bytes:1024,aReachable:true,copiedBytes:0});
+  await act('keep-alias','yes');
+  await act('copy','yes');
+  await act('drop-buffer','yes');
+  expect(JSON.parse((await model.getAttribute('data-state'))!)).toMatchObject({token:'B',roots:['other'],reachablePayloadBytes:1026});
+  await act('drop-alias','no');
+  expect(JSON.parse((await model.getAttribute('data-state'))!)).toMatchObject({eligible:true,reachablePayloadBytes:2,copiedBytes:2});
+  await lab.getByRole('button',{name:'回退一步'}).click();
+  expect(JSON.parse((await model.getAttribute('data-state'))!)).toMatchObject({alias:true,eligible:false});
+  await lab.getByRole('button',{name:'重置实验'}).click();
+  expect(JSON.parse((await model.getAttribute('data-state'))!)).toMatchObject({capacity:1024,buffer:true,token:'A',alias:false});
+});
+test('lesson 17 four distinct help interactions preserve lab and conceal transfer answer', async ({page}) => {
+  await page.goto('/#lesson/17');
+  await page.getByRole('button',{name:'动手观察',exact:true}).click();
+  const lab = page.getByTestId('collections-lab-17');
+  const original = await lab.getByTestId('live-model').getAttribute('data-state');
+  const help = page.getByTestId('collections-help-17');
+  await page.getByRole('button',{name:'举例子',exact:true}).click();
+  await help.getByRole('button',{name:'缓存复印页：独立复制'}).click();
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).toMatchObject({aReachable:true,roots:['other']});
+  await help.getByLabel('同事仍保留书签 other').uncheck();
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).toMatchObject({eligible:true});
+  await page.getByRole('button',{name:'画图',exact:true}).click();
+  await help.getByLabel('根 buffer 存活').uncheck();
+  await help.getByLabel('根 other 存活').uncheck();
+  await help.getByLabel('token 连接到',{exact:true}).selectOption('B');
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).toMatchObject({eligible:true,capacity:4});
+  await page.getByRole('button',{name:'拆步骤',exact:true}).click();
+  for(let i=0;i<3;i++) await help.getByRole('button',{name:'执行下一步'}).click();
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).toMatchObject({phase:3,eligible:true});
+  await help.getByRole('button',{name:'返回上一步'}).click();
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).toMatchObject({phase:2,roots:['other']});
+  await page.getByRole('button',{name:'让我试试',exact:true}).click();
+  await expect(help.getByRole('button',{name:'提交并核对'})).toBeDisabled();
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).not.toHaveProperty('result');
+  await help.getByLabel('操作后 A 是否仍可达？',{exact:true}).selectOption('yes');
+  await help.getByLabel('哪条引用支持你的判断？',{exact:true}).fill('队列仍保存原数组的窗口，other 让 A 可达');
+  await help.getByRole('button',{name:'提交并核对'}).click();
+  await expect(help).toContainText('本次预测吻合');
+  await expect(lab.getByTestId('live-model')).toHaveAttribute('data-state',original!);
+  await page.emulateMedia({reducedMotion:'reduce'});
+  for(const width of [390,320]) {
+    await page.setViewportSize({width,height:844});
+    expect(await lab.evaluate(e=>e.scrollWidth<=e.clientWidth)).toBeTruthy();
+    expect(await help.evaluate(e=>e.scrollWidth<=e.clientWidth)).toBeTruthy();
+  }
+  await help.getByRole('button',{name:'换个新情境'}).focus();
+  await page.keyboard.press('Enter');
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).toMatchObject({variant:1,checked:false});
+});

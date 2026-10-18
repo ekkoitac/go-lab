@@ -1,0 +1,57 @@
+import { test, expect } from '@playwright/test';
+test('lesson 20 predicts schedule, diagnoses sorting without synchronization, repairs and rewinds',async({page})=>{
+  await page.goto('/#lesson/20');await page.getByRole('button',{name:'动手观察',exact:true}).click();
+  const lab=page.getByTestId('collections-lab-20');const model=lab.getByTestId('live-model');
+  await expect(lab.getByRole('button',{name:'执行所选操作'})).toBeDisabled();
+  const act=async(action:string,answer:string)=>{
+    await lab.getByLabel('下一步操作',{exact:true}).selectOption(action);
+    await lab.getByLabel('这一步能怎样推进？',{exact:true}).selectOption(answer);
+    await lab.getByLabel('依据是哪次访问或哪把锁？',{exact:true}).fill('检查写者是否遵守与读者相同的 mu');
+    await lab.getByRole('button',{name:'执行所选操作'}).click();
+  };
+  await act('collect','ok');await act('sort','ok');await act('write','ok');
+  await expect(lab).toContainText('预测需要修正');
+  expect(JSON.parse((await model.getAttribute('data-state'))!)).toMatchObject({conflict:true,sorted:true,safeProtocol:false});
+  await lab.getByRole('button',{name:'回退一步'}).click();
+  expect(JSON.parse((await model.getAttribute('data-state'))!)).toMatchObject({conflict:false,sorted:true});
+  await lab.getByLabel('同步方案',{exact:true}).selectOption('shared');
+  await act('collect','ok');await act('sort','ok');await act('write','blocked');
+  expect(JSON.parse((await model.getAttribute('data-state'))!)).toMatchObject({outcome:'blocked',map:{amy:5},safeProtocol:true});
+  await act('output','ok');await act('write','ok');
+  expect(JSON.parse((await model.getAttribute('data-state'))!)).toMatchObject({map:{amy:9},rows:['amy:5','max:7','zoe:8']});
+  await lab.getByRole('button',{name:'重置实验'}).click();
+  expect(JSON.parse((await model.getAttribute('data-state'))!)).toMatchObject({keys:[],protocol:'none'});
+});
+test('lesson 20 help offers snapshot comparison, protocol wiring, schedule replay and concealed transfer',async({page})=>{
+  await page.goto('/#lesson/20');await page.getByRole('button',{name:'动手观察',exact:true}).click();
+  const lab=page.getByTestId('collections-lab-20');const original=await lab.getByTestId('live-model').getAttribute('data-state');
+  const help=page.getByTestId('collections-help-20');
+  await page.getByRole('button',{name:'举例子',exact:true}).click();
+  await help.getByLabel('输出前按键排序').check();
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).toMatchObject({rows:['amy:9','max:7','zoe:8']});
+  await help.getByLabel('收集时连同整数值一起复制').check();
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).toMatchObject({rows:['amy:5','max:7','zoe:8']});
+  await page.getByRole('button',{name:'画图',exact:true}).click();
+  await help.getByLabel('写入路径连接同一 mu.Lock').check();
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).toMatchObject({safe:true});
+  await help.getByLabel('读取路径连接 mu.RLock').uncheck();
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).toMatchObject({safe:false});
+  await help.getByLabel('启用写入路径').uncheck();
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).toMatchObject({safe:true});
+  await page.getByRole('button',{name:'拆步骤',exact:true}).click();
+  for(let i=0;i<3;i++) await help.getByRole('button',{name:'执行下一步'}).click();
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).toMatchObject({outcome:'blocked'});
+  await help.getByRole('button',{name:'返回上一步'}).click();
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).toMatchObject({outcome:'ok'});
+  await page.getByRole('button',{name:'让我试试',exact:true}).click();
+  await expect(help.getByRole('button',{name:'提交并核对'})).toBeDisabled();
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).not.toHaveProperty('result');
+  await help.getByLabel('能保证什么？',{exact:true}).selectOption('both');
+  await help.getByLabel('分别说明次序与读写的依据').fill('复制时双方遵守 mu，独立副本排序稳定输出');
+  await help.getByRole('button',{name:'提交并核对'}).click();await expect(help).toContainText('本次预测吻合');
+  await expect(lab.getByTestId('live-model')).toHaveAttribute('data-state',original!);
+  await page.emulateMedia({reducedMotion:'reduce'});
+  for(const width of [390,320]){await page.setViewportSize({width,height:844});expect(await lab.evaluate(e=>e.scrollWidth<=e.clientWidth)).toBeTruthy();expect(await help.evaluate(e=>e.scrollWidth<=e.clientWidth)).toBeTruthy();}
+  await help.getByRole('button',{name:'换个新情境'}).focus();await page.keyboard.press('Enter');
+  expect(JSON.parse((await help.getByTestId('live-model').getAttribute('data-state'))!)).toMatchObject({variant:1,checked:false});
+});
